@@ -48,7 +48,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="header--inner">
             <div class="logo">
                 <a class="logo-link" href="<?php echo get_home_url(); ?>" aria-label="Logo">
-                    <?php echo wp_get_attachment_image(get_field('logo_header_image', 'option'), 'full'); ?> 
+                    <?php echo wp_get_attachment_image( get_field( 'logo_header_image', 'option' ), 'full', false, array( 'fetchpriority' => 'high' ) ); ?> 
                 </a>
             </div>
             <div class="menu-mobile">
@@ -92,7 +92,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     ?>
             </div>
             <div id="searchOverlay" class="overlay">
-				<?php echo wp_get_attachment_image(get_field('search--background_image', 'option'), 'full'); ?> 
+				<?php echo wp_get_attachment_image( get_field( 'search--background_image', 'option' ), 'full', false, array( 'loading' => 'lazy' ) ); ?> 
 				<div class="close-btn">
 					<span></span>
 					<span></span>

@@ -4,12 +4,15 @@
                     <?php while( have_rows('certificates', 'option') ): the_row(); 
                         $link = get_sub_field('certificate_link', 'option'); 
                         $image_id = get_sub_field('certificate_image', 'option'); 
-                        $image = wp_get_attachment_image_src($image_id, 'full'); 
-                       
+                        $image = wp_get_attachment_image_src($image_id, 'full');
+                        $alt   = trim( (string) get_post_meta( $image_id, '_wp_attachment_image_alt', true ) );
+                        if ( $alt === '' ) {
+                            $alt = 'Certificate';
+                        }
                     ?>
                         <?php if( $link && $image ): ?>
-                            <a href="<?php echo esc_url($link); ?>" target="_blank" aria-label="<?php echo esc_attr($alt); ?>">
-                                <img src="<?php echo esc_url($image[0]); ?>" alt="certificates" width="150" height="55">
+                            <a href="<?php echo esc_url($link); ?>" target="_blank" aria-label="<?php echo esc_attr( $alt ); ?>">
+                                <img src="<?php echo esc_url($image[0]); ?>" alt="<?php echo esc_attr( $alt ); ?>" width="150" height="55" loading="lazy" decoding="async">
                             </a>
                         <?php endif; ?>
                     <?php endwhile; ?>
@@ -28,7 +31,7 @@
             <div class="footer-center">
                 <div class="row">
                     <a href="<?php echo get_home_url(); ?>" class="footer-logo-link" aria-label="Footer Logo Link">
-                        <?php echo wp_get_attachment_image(get_field('footer_logo', 'option'), 'full'); ?> 
+                        <?php echo wp_get_attachment_image( get_field( 'footer_logo', 'option' ), 'full', false, array( 'loading' => 'lazy', 'decoding' => 'async' ) ); ?> 
                     </a>
                     <p><?php the_field('footer_paragraph', 'option') ?></p>
                     <div class="social-media">
