@@ -1144,3 +1144,36 @@ function bna_add_sr_only_h1() {
     }
 }
 add_action( 'wp_head', 'bna_add_sr_only_h1' );
+
+add_action('template_redirect', function () {
+    ob_start(function ($html) {
+        return preg_replace_callback('/<img[^>]+>/i', function ($img) {
+            $tag = $img[0];
+            if (preg_match('/alt=["\'](.*?)["\']/', $tag, $m)) {
+                if (trim($m[1]) !== '') return $tag;
+            }
+            if (!preg_match('/src=["\'](.*?)["\']/', $tag, $src)) {
+                return $tag;
+            }
+            $url = $src[1];
+            $id = attachment_url_to_postid($url);
+            if ($id) {
+                $alt = get_post_meta($id, '_wp_attachment_image_alt', true);
+                if (!$alt) $alt = get_the_title($id);
+            } else {
+                $alt = pathinfo(basename($url), PATHINFO_FILENAME);
+                $alt = str_replace(['-', '_'], ' ', $alt);
+            }
+            $alt = esc_attr($alt);
+
+            if (strpos($tag, 'alt=') !== false) {
+                $tag = preg_replace('/alt=["\'].*?["\']/', 'alt="'.$alt.'"', $tag);
+            } else {
+                $tag = str_replace('<img', '<img alt="'.$alt.'"', $tag);
+            }
+            return $tag;
+
+        }, $html);
+
+    });
+});
