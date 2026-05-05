@@ -1144,3 +1144,14 @@ function bna_add_sr_only_h1() {
     }
 }
 add_action( 'wp_head', 'bna_add_sr_only_h1' );
+
+add_filter('wpseo_opengraph_image', function ($image) {
+    if (strpos($image, 'dev.bnadventure.com') !== false) {
+        $image = str_replace(
+            'dev.bnadventure.com',
+            'bnadventure.com',
+            $image
+        );
+    }
+    return $image;
+});
