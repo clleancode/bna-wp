@@ -1144,3 +1144,9 @@ function bna_add_sr_only_h1() {
     }
 }
 add_action( 'wp_head', 'bna_add_sr_only_h1' );
+
+add_action('wp_head', function () {
+    if (is_paged()) {
+        echo '<meta name="robots" content="noindex,follow">';
+    }
+});
