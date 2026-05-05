@@ -7655,3 +7655,14 @@ img {
     white-space: nowrap;
     border: 0;
 }
+
+
+/* Blendi 30/04/2026*/
+
+.mylivechat_buttonround {
+	top: unset !important;
+	bottom: 30px !important;
+	right: 3vw !important;
+	position: fixed !important;
+	left: unset !important;
+}
