@@ -1166,18 +1166,3 @@ function bna_fix_archive_pagination_query( $query ) {
 }
 add_action( 'pre_get_posts', 'bna_fix_archive_pagination_query' );
 
-
-function bna_fix_pagination_404_redirect() {
-    if ( is_admin() ) return;
-
-    if ( is_paged() ) {
-        global $wp_query;
-
-        if ( $wp_query->max_num_pages && get_query_var('paged') > $wp_query->max_num_pages ) {
-            wp_redirect( get_pagenum_link( 1 ), 301 );
-            exit;
-        }
-    }
-}
-add_action('template_redirect', 'bna_fix_pagination_404_redirect', 1);
-
