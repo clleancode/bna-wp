@@ -1155,3 +1155,24 @@ add_filter('wpseo_opengraph_image', function ($image) {
     }
     return $image;
 });
+function bna_fix_archive_pagination_query( $query ) {
+    if ( is_admin() || ! $query->is_main_query() ) {
+        return;
+    }
+
+    if ( $query->is_archive() || $query->is_tax() ) {
+
+        if ( isset( $query->query_vars['paged'] ) ) {
+            $paged = (int) $query->query_vars['paged'];
+            if ( $paged < 1 ) {
+                $query->set( 'paged', 1 );
+            }
+        }
+
+        $query->set( 'posts_per_page', 9 );
+
+        $query->set( 'no_found_rows', false );
+    }
+}
+add_action( 'pre_get_posts', 'bna_fix_archive_pagination_query' );
+
