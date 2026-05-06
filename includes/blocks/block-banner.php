@@ -1,5 +1,10 @@
 <div class="banner container">
-<?php echo wp_get_attachment_image(get_field('banner_image'), 'full', false, array('alt' => '')); ?> 
+<?php echo wp_get_attachment_image(get_field('banner_image'), 'full', false, array(
+    'alt' => '',
+    'loading' => 'eager',
+    'fetchpriority' => 'high',
+    'decoding' => 'sync'
+)); ?> 
     <div class="banner-content">
         <h1><?php the_field('banner_title'); ?></h1>
         <ul>
