@@ -5,23 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	
     <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    <!-- <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
     j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     'https://www.googletagmanager.com/gtm.js?id=GTM-WFWLS66' + dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-WFWLS66');</script>
+    })(window,document,'script','dataLayer','GTM-WFWLS66');</script> -->
     <!-- End Google Tag Manager -->
-
-    <link rel="apple-touch-icon" sizes="180x180" href="<?php bloginfo('template_url'); ?>/img/favicons/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="<?php bloginfo('template_url'); ?>/img/favicons/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="<?php bloginfo('template_url'); ?>/img/favicons/favicon-16x16.png">
-    <link rel="mask-icon" href="<?php bloginfo('template_url'); ?>/img/favicons/safari-pinned-tab.svg" color="#5bbad5">
-    <link rel="shortcut icon" href="<?php bloginfo('template_url'); ?>/img/favicons/favicon.ico">
     <meta name="msapplication-TileColor" content="#da532c">
     <meta name="msapplication-config" content="<?php bloginfo('template_url'); ?>/img/favicons/browserconfig.xml">
     <meta name="theme-color" content="#000000">
     <meta name="keywords" content="" />
     <meta name="author" content="">
+    
 
     <?php wp_head(); ?>
 
@@ -43,11 +38,11 @@
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WFWLS66"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
-<div class="header">
+<div class="header ">
     <div class="wrapper">
         <div class="header--inner">
             <div class="logo">
-                <a class="logo-link" href="<?php echo get_home_url(); ?>" aria-label="Logo">
+                <a class="logo-link" href="<?php echo esc_url( home_url('/') ); ?>" aria-label="Logo">
                     <?php echo wp_get_attachment_image(get_field('logo_header_image', 'option'), 'full'); ?> 
                 </a>
             </div>
@@ -118,3 +113,39 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
 	
 </div>
+
+
+<script>
+(function () {
+
+    let gtmLoaded = false;
+
+    function loadGTM() {
+        if (gtmLoaded) return;
+        gtmLoaded = true;
+
+        (function(w,d,s,l,i){
+            w[l]=w[l]||[];
+            w[l].push({'gtm.start': new Date().getTime(), event:'gtm.js'});
+
+            var f=d.getElementsByTagName(s)[0],
+                j=d.createElement(s),
+                dl=l!='dataLayer'?'&l='+l:'';
+
+            j.async = true;
+            j.src = 'https://www.googletagmanager.com/gtm.js?id=GTM-WFWLS66' + dl;
+
+            f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','GTM-WFWLS66');
+    }
+
+    // më e mirë se scroll vetëm
+    window.addEventListener('mousemove', loadGTM, { once: true });
+    window.addEventListener('scroll', loadGTM, { once: true });
+    window.addEventListener('click', loadGTM, { once: true });
+
+    // fallback
+    setTimeout(loadGTM, 4000);
+
+})();
+</script>
