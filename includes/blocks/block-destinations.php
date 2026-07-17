@@ -11,9 +11,9 @@
                     <?php echo wp_get_attachment_image(get_post_thumbnail_id($destination->ID), 'full'); ?>
                     <div class="title">
                         <span></span>
-                        <h5 class="box-title"><?php echo $destination->post_title; ?></h5>
+                        <h5 class="box-title"><?php echo esc_html($destination->post_title); ?></h5>
                     </div>
-                    <p><?php echo get_the_excerpt($destination->ID); ?></p>
+                    <p><?php echo esc_html(get_the_excerpt($destination->ID)); ?></p>
                 </a>
             <?php
                 wp_reset_postdata();

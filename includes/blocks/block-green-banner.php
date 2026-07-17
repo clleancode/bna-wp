@@ -8,7 +8,7 @@
         <?php endforeach; ?>
    <?php endif; ?>
     <div class="tent-camping--inner">
-        <h2 class="title"><?php the_field('bold_title'); ?> <br> <span><?php the_field('title'); ?></span></h2>
+        <h2 class="title"><?php echo esc_html(get_field('bold_title')); ?> <br> <span><?php echo esc_html(get_field('title')); ?></span></h2>
         <span><?php the_field('background_text'); ?></span>
         <?php 
             $link = get_field('button');

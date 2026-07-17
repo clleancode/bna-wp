@@ -1,6 +1,6 @@
 <?php $numberOfSlides = 0; ?>
 <div class="documents container">
-    <h2 class="title"><?php the_field('bold_title'); ?></h2>
+    <h2 class="title"><?php echo esc_html(get_field('bold_title')); ?></h2>
     <div class="documents-inner">
         <?php while(have_rows('documents')): the_row(); $numberOfSlides++; ?>
             <a href="<?php echo get_sub_field('pdf_file')['url']; ?>" target="_blank" class="document">

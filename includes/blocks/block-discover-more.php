@@ -1,22 +1,22 @@
 <div class="faq--travel container">
     <div class="travel--information">
         <div class="subtitle">
-            <p><?php the_field('section_number'); ?></p>
+            <p><?php echo esc_html(get_field('section_number')); ?></p>
             <span></span>
-            <p><?php the_field('subtitle'); ?></p>
+            <p><?php echo esc_html(get_field('subtitle')); ?></p>
         </div>
-        <h2 class="title"><?php the_field('bold_title'); ?> <br> <span> <?php the_field('title'); ?></span></h2>
+        <h2 class="title"><?php echo esc_html(get_field('bold_title')); ?> <br> <span> <?php echo esc_html(get_field('title')); ?></span></h2>
         <p><?php the_field('paragraph'); ?></p>  
 		<?php 
              if(get_field('info_title')) : 
           ?>
         <div class="input--range">
             <div class="input--info">
-               <p><?php the_field('info_title'); ?></p>
+               <p><?php echo esc_html(get_field('info_title')); ?></p>
                 <?php endif; 
                 	if(get_field('percent')) : 
                 	?>
-               <p class="percent"><?php the_field('percent'); ?></p>
+               <p class="percent"><?php echo esc_html(get_field('percent')); ?></p>
             </div>
             <div class="input">
                 <div class="input--fill"></div>

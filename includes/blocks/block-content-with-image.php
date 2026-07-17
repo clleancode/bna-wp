@@ -3,10 +3,10 @@
     <?php
         if(get_field('bold_title')):
     ?>
-    <h2 class="title"><?php the_field('bold_title'); ?></h2>
+    <h2 class="title"><?php echo esc_html(get_field('bold_title')); ?></h2>
     <?php endif; ?>
     <?php while(have_rows('content')): the_row(); $numberOfSlides++; ?>
-        <?php the_sub_field('paragraph'); ?>
+        <?php echo wp_kses_post(get_sub_field('paragraph')); ?>
         <?php
             if(get_sub_field('image')):
         ?>

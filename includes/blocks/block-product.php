@@ -24,7 +24,7 @@
                     echo wp_get_attachment_image( $thumbnail_id, 'full' );
                 ?>
                 <div class="about-blog">
-                    <h4><?php the_title(); ?></h4>
+                    <h4><?php echo esc_html(get_the_title()); ?></h4>
                     <h5>Read More <span class="icon-angle-double-down"></span></h5>
                 </div>
             </a>
@@ -46,7 +46,7 @@
                         $post = get_post($post_id);
                         if ($post) : ?>
                             <li>
-                                <a href="<?php echo get_permalink($post_id); ?>">
+                                <a href="<?php echo esc_url(get_permalink($post_id)); ?>">
                                     <?php echo esc_html(get_the_title($post)); ?>
                                     <span class="icon-up-right"></span>
                                 </a>

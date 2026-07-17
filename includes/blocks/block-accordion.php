@@ -4,7 +4,7 @@
             <?php while(have_rows('accordion_box')): the_row(); $numberOfSlides++; ?>
                 <div class="accordion--card">
                     <div class="accordion--card-header">
-                        <h5 class="paragraph"><?php the_sub_field('accordion_title'); ?></h5>
+                        <h5 class="paragraph"><?php echo esc_html(get_sub_field('accordion_title')); ?></h5>
                         <span class="icon-up-right arrow"></span>
                     </div>
                     <div class="accordion--card-body">

@@ -23,7 +23,7 @@
                     echo wp_get_attachment_image( $thumbnail_id, 'full' );
                 ?>
                 <div class="about-blog">
-                    <h4><?php the_title(); ?></h4>
+                    <h4><?php echo esc_html(get_the_title()); ?></h4>
                     <h5>Read More <span class="icon-angle-double-down"></span></h5>
                 </div>
             </a>
@@ -84,7 +84,7 @@
                         }
                     ?>
                     <div class="news--info">
-                        <h6><?php the_title(); ?></h6>
+                        <h6><?php echo esc_html(get_the_title()); ?></h6>
                         <span></span>
                         <p><span class="icon-calendar"></span> <?php echo get_the_date('F j, Y'); ?></p>
                     </div>

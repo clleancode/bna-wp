@@ -4,11 +4,11 @@
     <div class="content">
         <div class="content--inner">
             <div class="subtitle">
-                <p><?php the_field('section_number'); ?></p>
+                <p><?php echo esc_html(get_field('section_number')); ?></p>
                 <span></span>
-                <p><?php the_field('subtitle'); ?></p>
+                <p><?php echo esc_html(get_field('subtitle')); ?></p>
             </div>
-            <h2 class="title"><?php the_field('title'); ?></h2>
+            <h2 class="title"><?php echo esc_html(get_field('title')); ?></h2>
             <div class="mission--boxes">
                 <?php while(have_rows('mission_boxes')): the_row(); $numberOfSlides++; ?>
                     <div class="mission--box">
@@ -23,7 +23,7 @@
                                   echo '<span class="icon-services "></span>';
                                 }
                             ?>
-                            <h3><?php the_sub_field('box_title'); ?></h3>
+                            <h3><?php echo esc_html(get_sub_field('box_title')); ?></h3>
                             <p><?php the_sub_field('box_content'); ?></p>
                             <span class="line"></span>
                         </div>

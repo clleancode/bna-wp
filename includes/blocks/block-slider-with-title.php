@@ -7,7 +7,7 @@
                <?php echo wp_get_attachment_image(get_sub_field('slider_image'), 'full'); ?> 
 				<div class="camping--slider-checks">
           			<div class="checks--info">
-            			<h5><?php the_sub_field('title'); ?></h5>
+            			<h5><?php echo esc_html(get_sub_field('title')); ?></h5>
           			</div>
         		</div>
 			</a>

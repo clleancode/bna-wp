@@ -28,7 +28,7 @@
                            echo '<span class="icon-cat"></span>';
                        }
                     ?>
-                    <h4><?php the_sub_field('topic_title'); ?></h4>
+                    <h4><?php echo esc_html(get_sub_field('topic_title')); ?></h4>
                 </div>
                 <?php
                     if ($activeTopicIndex === $topicIndex) {
@@ -47,11 +47,11 @@
                     <?php while(have_rows('accordian_box')): the_row(); $numberOfSlides++; ?>
                         <div class="accordion--card">
                             <div class="accordion--card-header">
-                                <h5 class="paragraph"><?php the_sub_field('accordian_title'); ?></h5>
+                                <h5 class="paragraph"><?php echo esc_html(get_sub_field('accordian_title')); ?></h5>
                                 <span class="icon-up-right arrow"></span>
                             </div>
                             <div class="accordion--card-body">
-                                <p><?php the_sub_field('accordian_paragraph'); ?></p>
+                                <p><?php echo esc_html(get_sub_field('accordian_paragraph')); ?></p>
                             </div>
                         </div>
                     <?php endwhile; wp_reset_postdata(); ?>

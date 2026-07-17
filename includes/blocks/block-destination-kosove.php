@@ -37,7 +37,7 @@
                 <div class="box--inner">
                     <div class="title">
                         <span></span>
-                        <h5><?php the_title(); ?></h5>
+                        <h5><?php echo esc_html(get_the_title()); ?></h5>
                     </div>
                     <?php the_excerpt(); ?>
                     <span></span>

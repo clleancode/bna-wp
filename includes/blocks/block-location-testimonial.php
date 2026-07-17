@@ -3,11 +3,11 @@
 <?php $numberOfSlides = 0; ?>
 <div class="location--testimonial">
     <div class="subtitle">
-      <p><?php the_field('section_number'); ?></p>
+      <p><?php echo esc_html(get_field('section_number')); ?></p>
       <span></span>
-      <p><?php the_field('subtitle'); ?></p>
+      <p><?php echo esc_html(get_field('subtitle')); ?></p>
   </div>
-  <h2 class="title"><?php the_field('bold_title'); ?></h2>
+  <h2 class="title"><?php echo esc_html(get_field('bold_title')); ?></h2>
     <!-- Swiper -->
   <div class="swiper mySwiper location-testimonial-slider">
     <div class="swiper-wrapper">
@@ -15,12 +15,12 @@
       <div class="swiper-slide">
         <div class="location--testimonial-content">
             <span class="icon-quotes-sign"></span>
-            <p><?php the_sub_field('paragraph'); ?></p>
+            <p><?php echo esc_html(get_sub_field('paragraph')); ?></p>
             <div class="author">
                 <?php echo wp_get_attachment_image(get_sub_field('author_image'), 'full'); ?> 
                 <div class="author--info">
                     <h5><?php the_sub_field('name'); ?></h5>
-                    <p><?php the_sub_field('position'); ?></p>
+                    <p><?php echo esc_html(get_sub_field('position')); ?></p>
                     <div class="stars">
                         <span class="icon-star"></span>
                         <span class="icon-star"></span>

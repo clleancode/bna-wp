@@ -3,18 +3,18 @@
     <div class="about--inner">
             <div class="about-us--content container">
                 <div class="subtitle">
-                    <p><?php the_field('section_number'); ?></p>
+                    <p><?php echo esc_html(get_field('section_number')); ?></p>
                     <span></span>
-                    <p><?php the_field('subtitle'); ?></p>
+                    <p><?php echo esc_html(get_field('subtitle')); ?></p>
                 </div>
-                <h2 class="title"><?php the_field('section_title'); ?><br> <span><?php the_field('bold_title'); ?></span></h2>
-                <p><?php the_field('about_us--text'); ?></p>
+                <h2 class="title"><?php echo esc_html(get_field('section_title')); ?><br> <span><?php echo esc_html(get_field('bold_title')); ?></span></h2>
+                <p><?php echo esc_html(get_field('about_us--text')); ?></p>
                 <?php
 					if(get_field('about_us--check')):
 				?>	
                     <ul>
                         <?php while(have_rows('about_us--check')): the_row(); $numberOfSlides++; ?>
-                            <li><span class="icon-check"></span><?php the_sub_field('text'); ?></li>
+                            <li><span class="icon-check"></span><?php echo esc_html(get_sub_field('text')); ?></li>
                         <?php endwhile; wp_reset_postdata(); ?> 
                     </ul>
                 <?php endif; ?>
@@ -30,7 +30,7 @@
                 </div>
             <div class="about--inner--right"> 
                 <div class="about--inner image-overlay">
-                     <h2 class="text-rotate"><?php the_field('text_rotate'); ?></h2>
+                     <h2 class="text-rotate"><?php echo esc_html(get_field('text_rotate')); ?></h2>
                 </div>
                 <?php 
                     $images = get_field('images');

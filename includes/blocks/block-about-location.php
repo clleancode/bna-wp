@@ -1,18 +1,18 @@
 <div class="about--location container">
     <div class="location--content">
         <div class="subtitle">
-            <p><?php the_field('section_number'); ?></p>
+            <p><?php echo esc_html(get_field('section_number')); ?></p>
             <span></span>
-            <p><?php the_field('subtitle'); ?></p>
+            <p><?php echo esc_html(get_field('subtitle')); ?></p>
         </div>
-        <h2 class="title"><?php the_field('bold_title'); ?><span> <?php the_field('title'); ?> </span></h2>
-        <p><?php the_field('about-location__content'); ?></p>
+        <h2 class="title"><?php echo esc_html(get_field('bold_title')); ?><span> <?php echo esc_html(get_field('title')); ?> </span></h2>
+        <p><?php echo esc_html(get_field('about-location__content')); ?></p>
         <div class="years-of-experience">
             <span class="icon-up-right"></span>
-            <span class="years"><?php the_field('number'); ?></span>
+            <span class="years"><?php echo esc_html(get_field('number')); ?></span>
             <div class="experience">
                 <span>+</span>
-                <p><?php the_field('name'); ?></p>
+                <p><?php echo esc_html(get_field('name')); ?></p>
             </div>
         </div>
     </div>

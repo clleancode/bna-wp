@@ -4,15 +4,15 @@
     <div class="adventure--inner container">
 
         <div class="subtitle">
-            <p><?php the_field('section_number'); ?></p>
+            <p><?php echo esc_html(get_field('section_number')); ?></p>
             <span></span>
-            <p><?php the_field('subtitle'); ?></p>
+            <p><?php echo esc_html(get_field('subtitle')); ?></p>
         </div>
 
         <h2 class="title">
-            <?php the_field('first_title'); ?>
+            <?php echo esc_html(get_field('first_title')); ?>
             <br>
-            <span><?php the_field('bold_title'); ?></span>
+            <span><?php echo esc_html(get_field('bold_title')); ?></span>
         </h2>
 
         <div class="adventure--boxes">

@@ -25,7 +25,7 @@
         if ($destinations_query->have_posts()) :
             while ($destinations_query->have_posts()) : $destinations_query->the_post();
     ?>
-            <a class="box" href="<?php the_permalink(); ?>">
+            <a class="box" href="<?php echo esc_url(get_permalink()); ?>">
                 <?php
 					if (has_post_thumbnail()) {
 						echo wp_get_attachment_image(
@@ -39,7 +39,7 @@
                 <div class="box--inner">
                     <div class="title">
                         <span></span>
-                        <h5><?php the_title(); ?></h5>
+                        <h5><?php echo esc_html(get_the_title()); ?></h5>
                     </div>
                     <?php the_excerpt(); ?>
                     <span></span>
