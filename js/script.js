@@ -22,18 +22,18 @@
             $(this).css({transition: "all .3s ease-in-out"});
         });
 
-        // ===== Home Slider (Swiper) =====
-        if ($(".myHeader").length) {
-            var swiper = new Swiper(".myHeader", {
-                effect: "fade",
-                speed: 800,
-                loop: true,
-                navigation: {
-                    nextEl: ".swiper-button-next",
-                    prevEl: ".swiper-button-prev",
-                }
-            });
-        }
+        // // ===== Home Slider (Swiper) =====
+        // if ($(".myHeader").length) {
+        //     var swiper = new Swiper(".myHeader", {
+        //         effect: "fade",
+        //         speed: 800,
+        //         loop: true,
+        //         navigation: {
+        //             nextEl: ".swiper-button-next",
+        //             prevEl: ".swiper-button-prev",
+        //         }
+        //     });
+        // }
 
         // ===== Search Overlay =====
         $(".search-box--inner").on("click", function(){	

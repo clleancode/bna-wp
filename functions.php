@@ -48,18 +48,26 @@
 	// 	return $headers;
 	// }
 	// add_filter( 'wp_headers', 'bnadventure_set_assets_cache_headers', 15 );
+
+// 	add_action('wp_head', function() {
+//     $theme_dir     = get_template_directory();
+//     $theme_dir_uri = get_template_directory_uri();
+//     $ver = file_exists($theme_dir . '/css/style.css') ? filemtime($theme_dir . '/css/style.css') : '1';
+//     echo '<link rel="preload" href="' . $theme_dir_uri . '/css/style.css?ver=' . $ver . '" as="style" crossorigin>';
+// }, 1);
+
 function balkan_nature_adventure_scripts() {
 	$theme_dir     = get_template_directory();
 	$theme_dir_uri = get_template_directory_uri();
 	$style_dir     = get_stylesheet_directory();
 
 	// Styles.
-	wp_enqueue_style(
-		'swiper',
-		$theme_dir_uri . '/css/swiper.min.css',
-		array(),
-		'0.1'
-	);
+	// wp_enqueue_style(
+	// 	'swiper',
+	// 	$theme_dir_uri . '/css/swiper.min.css',
+	// 	array(),
+	// 	'0.1'
+	// );
 
 	wp_enqueue_style(
 		'balkan_nature_adventure_style_styles',
@@ -68,12 +76,12 @@ function balkan_nature_adventure_scripts() {
 		file_exists( $theme_dir . '/css/style.css' ) ? filemtime( $theme_dir . '/css/style.css' ) : null
 	);
 
-	wp_enqueue_style(
-		'balkan_nature_adventure_fancybox_styles',
-		$theme_dir_uri . '/css/fancybox.min.css',
-		array(),
-		file_exists( $theme_dir . '/css/fancybox.min.css' ) ? filemtime( $theme_dir . '/css/fancybox.min.css' ) : null
-	);
+	// wp_enqueue_style(
+	// 	'balkan_nature_adventure_fancybox_styles',
+	// 	$theme_dir_uri . '/css/fancybox.min.css',
+	// 	array(),
+	// 	file_exists( $theme_dir . '/css/fancybox.min.css' ) ? filemtime( $theme_dir . '/css/fancybox.min.css' ) : null
+	// );
 
 	// Scripts.
 	wp_enqueue_script( 'jquery' );
@@ -102,13 +110,13 @@ function balkan_nature_adventure_scripts() {
 		true
 	);
 
-	wp_enqueue_script(
-		'bundle-js',
-		$theme_dir_uri . '/js/bundle.js',
-		array(),
-		file_exists( $theme_dir . '/js/bundle.js' ) ? filemtime( $theme_dir . '/js/bundle.js' ) : null,
-		true
-	);
+     wp_enqueue_script(
+         'bundle-js',
+         $theme_dir_uri . '/js/bundle.js',
+         array(),
+         filemtime($theme_dir . '/js/bundle.js'),
+         true
+     );
 
 	wp_localize_script(
 		'main-js',
@@ -704,6 +712,34 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 	add_action( 'init', 'destination_post' );
 
 
+	add_action('parse_request', function($wp) {
+
+		$uri = $_SERVER['REQUEST_URI'];
+	
+		$blocked_urls = [
+			'/de/grabbing-travel-world-headlines/',
+			'/fr/grabbing-travel-world-headlines/',
+			'/nl/grabbing-travel-world-headlines/',
+	
+			'/fr/peaks-of-kosovo-majet-e-kosoves/',
+			'/de/peaks-of-kosovo-majet-e-kosoves/',
+		];
+	
+		foreach ($blocked_urls as $bad) {
+			if (strpos($uri, $bad) !== false) {
+	
+				global $wp_query;
+				$wp_query->set_404();
+				status_header(404);
+				nocache_headers();
+	
+				include get_query_template('404');
+				exit;
+			}
+		}
+	
+	}); 
+
 
 	function galleries_post() {
 		$labels = array(
@@ -754,32 +790,6 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 
 	add_post_type_support( 'page', 'excerpt' );
 
-	function limit_login_attempts() {
-	    $max_attempts = 5;
-	    $lockout_time = 60 * 10; // 10 minutes
-
-	    if (!session_id()) {
-	        session_start();
-	    }
-
-	    if (isset($_POST['log'])) { // Detect login attempt
-	        if (!isset($_SESSION['login_attempts'])) {
-	            $_SESSION['login_attempts'] = 1;
-	        } else {
-	            $_SESSION['login_attempts']++;
-	        }
-
-	        if ($_SESSION['login_attempts'] > $max_attempts) {
-	            wp_die('Too many failed login attempts. Please try again in 10 minutes.');
-	        }
-	    }
-
-	    if (isset($_GET['action']) && $_GET['action'] == 'wp_login') {
-	        $_SESSION['login_attempts'] = 0; // Reset on successful login
-	    }
-	}
-	add_action('login_init', 'limit_login_attempts');
-
 
 	remove_action('wp_head', 'print_emoji_detection_script', 7);
 	remove_action('wp_print_styles', 'print_emoji_styles');
@@ -799,13 +809,22 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 	}, 100);
 
 	add_filter('the_content', function($content) {
-	    if (is_admin()) return $content;
-	    return preg_replace_callback('/<img\s[^>]*>/i', function ($matches) {
-	        $img = $matches[0];
-	        if (strpos($img, 'loading=') !== false) return $img;
-	        return preg_replace('/<img(.*?)>/i', '<img$1 loading="lazy">', $img);
-	    }, $content);
-	});
+    if (is_admin()) return $content;
+    
+    $count = 0;
+    return preg_replace_callback('/<img\s[^>]*>/i', function ($matches) use (&$count) {
+        $img = $matches[0];
+        $count++;
+        
+        if ($count === 1) {
+            $img = preg_replace('/\sloading=["\']lazy["\']/i', '', $img);
+            return $img;
+        }
+        
+        if (strpos($img, 'loading=') !== false) return $img;
+        return preg_replace('/<img(.*?)>/i', '<img$1 loading="lazy">', $img);
+    }, $content);
+});
 
 	add_filter('the_content', function($content) {
 	    if (is_admin()) return $content;
@@ -834,74 +853,84 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 	    wp_register_style('open-sans', false);
 	});
 
-	add_filter('jpeg_quality', fn($q) => 80);
-	add_filter('wp_editor_set_quality', fn($q) => 80, 10, 1);
+	// add_filter('jpeg_quality', fn($q) => 80);
+	// add_filter('wp_editor_set_quality', fn($q) => 80, 10, 1);
 
-	add_filter('intermediate_image_sizes_advanced', function($sizes) {
-	    unset($sizes['1536x1536'], $sizes['2048x2048']);
-	    return $sizes;
-	});
+	// add_filter('intermediate_image_sizes_advanced', function($sizes) {
+	//     unset($sizes['1536x1536'], $sizes['2048x2048']);
+	//     return $sizes;
+	// });
 
-	add_filter('wp_generate_attachment_metadata', function($metadata, $attachment_id) {
-	    // Remove WP's huge image sizes (in case still present)
-	    foreach (['1536x1536','2048x2048'] as $size) unset($metadata['sizes'][$size]);
+	// add_filter('wp_generate_attachment_metadata', function($metadata, $attachment_id) {
+	//     // Remove WP's huge image sizes (in case still present)
+	//     foreach (['1536x1536','2048x2048'] as $size) unset($metadata['sizes'][$size]);
 
-	    $file = get_attached_file($attachment_id);
-	    $image_info = @getimagesize($file);
-	    if (!$image_info) return $metadata;
-	    $mime = $image_info['mime'];
+	//     $file = get_attached_file($attachment_id);
+	//     $image_info = @getimagesize($file);
+	//     if (!$image_info) return $metadata;
+	//     $mime = $image_info['mime'];
 
-	    $quality = 80;
+	//     $quality = 80;
 
-	    // Only optimize if real images (jpeg/png)
-	    if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
-	        if (function_exists('imagecreatefromjpeg')) {
-	            $image = imagecreatefromjpeg($file);
-	            if ($image) {
-	                imagejpeg($image, $file, $quality);
-	                imagedestroy($image);
-	            }
-	        }
-	    }
-	    elseif ($mime === 'image/png') {
-	        if (function_exists('imagecreatefrompng')) {
-	            $image = imagecreatefrompng($file);
-	            if ($image) {
-	                imagepng($image, $file, 2);
-	                imagedestroy($image);
-	            }
-	        }
-	    }
+	//     // Only optimize if real images (jpeg/png)
+	//     if ($mime === 'image/jpeg' || $mime === 'image/jpg') {
+	//         if (function_exists('imagecreatefromjpeg')) {
+	//             $image = imagecreatefromjpeg($file);
+	//             if ($image) {
+	//                 imagejpeg($image, $file, $quality);
+	//                 imagedestroy($image);
+	//             }
+	//         }
+	//     }
+	//     elseif ($mime === 'image/png') {
+	//         if (function_exists('imagecreatefrompng')) {
+	//             $image = imagecreatefrompng($file);
+	//             if ($image) {
+	//                 imagepng($image, $file, 2);
+	//                 imagedestroy($image);
+	//             }
+	//         }
+	//     }
 
-	    if (function_exists('imagewebp') && in_array($mime, ['image/jpeg','image/jpg','image/png'])) {
-	        $webp_path = preg_replace('/\.(jpe?g|png)$/i', '.webp', $file);
-	        $img_func = $mime === 'image/png' ? 'imagecreatefrompng' : 'imagecreatefromjpeg';
-	        $image = $img_func($file);
-	        if ($image) {
-	            imagewebp($image, $webp_path, $quality);
-	            imagedestroy($image);
-	        }
-	    }
+	//     if (function_exists('imagewebp') && in_array($mime, ['image/jpeg','image/jpg','image/png'])) {
+	//         $webp_path = preg_replace('/\.(jpe?g|png)$/i', '.webp', $file);
+	//         $img_func = $mime === 'image/png' ? 'imagecreatefrompng' : 'imagecreatefromjpeg';
+	//         $image = $img_func($file);
+	//         if ($image) {
+	//             imagewebp($image, $webp_path, $quality);
+	//             imagedestroy($image);
+	//         }
+	//     }
 
-	    return $metadata;
-	}, 20, 2);
+	//     return $metadata;
+	// }, 20, 2);
 
-	// Add script defer for main scripts (except jquery)
-	add_filter('script_loader_tag', function($tag, $handle) {
-	    $defer = ['swiper','main-js','bundle-js','balkan_nature_adventure_js','fancybox'];
-	    if(in_array($handle, $defer)) {
-	        return str_replace(' src', ' defer src', $tag);
-	    }
-	    return $tag;
-	}, 10, 2);
+	add_filter( 'script_loader_tag', function ( $tag, $handle ) {
+		if ( is_admin() ) return $tag;
+
+		$delay = array( 'swiper', 'bundle-js', 'fancybox', 'main-js' );
+
+		if ( ! in_array( $handle, $delay, true ) ) return $tag;
+
+		if ( ! preg_match( '/src=["\']([^"\']+)["\']/', $tag, $matches ) ) return $tag;
+		$src = $matches[1];
+		$timeout = ( $handle === 'swiper' ) ? 2000 : 3000;
+
+		return '<script>setTimeout(function(){' .
+			'var s=document.createElement("script");' .
+			's.src="' . esc_js( $src ) . '";' .
+			's.defer=true;' .
+			'document.body.appendChild(s);' .
+			'},' . $timeout . ');</script>' . "\n";
+	}, 10, 2 );
 
 
-add_action('wp_enqueue_scripts', function() {
-    if (!is_page('contact')) {
-        wp_dequeue_script('google-recaptcha');
-        wp_dequeue_script('wpcf7-recaptcha'); 
-    }
-}, 20);
+// add_action('wp_enqueue_scripts', function() {
+//     if (!is_page('contact')) {
+//         wp_dequeue_script('google-recaptcha');
+//         wp_dequeue_script('wpcf7-recaptcha'); 
+//     }
+// }, 20);
 
 add_filter( 'wp_get_attachment_image_attributes', function( $attr, $attachment ) {
 	if ( empty( $attr['alt'] ) ) {
@@ -914,117 +943,7 @@ add_filter( 'wp_get_attachment_image_attributes', function( $attr, $attachment )
 }, 10, 2 );
 
 
-if ( ! function_exists( 'bna_legacy_redirects' ) ) {
-	function bna_legacy_redirects() {
-		if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
-			return;
-		}
 
-		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '';
-		if ( empty( $request_uri ) ) {
-			return;
-		}
-
-		$path = wp_parse_url( $request_uri, PHP_URL_PATH );
-		$path = is_string( $path ) ? trim( $path, '/' ) : '';
-
-		$query = isset( $_SERVER['QUERY_STRING'] ) ? $_SERVER['QUERY_STRING'] : '';
-		parse_str( $query, $query_args );
-
-		$redirect_map = array(
-			'de/4500' => '/de/uber-uns/was-ist-travelife/',
-			'fr/4498' => '/fr/about-us/travelife/',
-			'nl/4502' => '/nl/over-ons/travelife/',
-			'destination/camping-in-hajla-weekend' => '/products/hike-the-hajla-peak/',
-			'bnadventure_product/peaks-of-the-balkans-2021' => '/peaks-of-the-balkans/',
-			'bnadventure_product/gjeravica-hiking' => '/via-dinarica-2/',
-			'via-ferrata-ari-and-mat' => '/products/hiking-in-kosovo/',
-			'de/startpagina/en' => '/de/startpagina/',
-			'3862-2' => '/nl/imprint/',
-			'de/produkte/tirana-one-day-city-visits' => '/de/products/tirana-one-day-city-visits/',
-			'nl/producten/tirana-one-day-city-visits' => '/nl/products/begeleid-hoge-scardus-2025/',
-			'bnadventure_product/the-accursed-mountains-northern-albania' => '/peaks-of-the-balkans-in-covid-19-pandemic/',
-			'de/produkte/tirana-one-day-city-visits' => '/de/products/gefuhrte-tour-hoher-scardus-2025/',
-		);
-
-		if ( isset( $query_args['page_id'] ) && (string) $query_args['page_id'] === '22' ) {
-			wp_redirect( home_url( '/' ), 301 );
-			exit;
-		}
-
-		if ( isset( $redirect_map[ $path ] ) ) {
-			wp_redirect( home_url( $redirect_map[ $path ] ), 301 );
-			exit;
-		}
-	}
-	add_action( 'template_redirect', 'bna_legacy_redirects', 1 );
-}
-
-
-
-
-function bna_custom_hreflang() {
-	if ( is_admin() || wp_doing_ajax() ) {
-		return;
-	}
-
-	if ( ! function_exists( 'pll_the_languages' ) ) {
-		return;
-	}
-
-	$languages = pll_the_languages(
-		array(
-			'raw'              => 1,
-			'hide_if_empty'    => 0,
-			'display_names_as' => 'slug',
-		)
-	);
-
-	if ( ! is_array( $languages ) || empty( $languages ) ) {
-		return;
-	}
-
-	$alternate_links = array();
-	$x_default_url   = '';
-
-	foreach ( $languages as $language ) {
-		if ( empty( $language['slug'] ) || empty( $language['url'] ) ) {
-			continue;
-		}
-
-		$lang_code = strtolower( trim( (string) $language['slug'] ) );
-		$lang_url  = esc_url( $language['url'] );
-
-		if ( empty( $lang_code ) || empty( $lang_url ) ) {
-			continue;
-		}
-
-		$alternate_links[ $lang_code ] = $lang_url;
-
-		if ( ! empty( $language['current_lang'] ) ) {
-			$x_default_url = $lang_url;
-		}
-	}
-
-	if ( empty( $alternate_links ) ) {
-		return;
-	}
-
-	if ( empty( $x_default_url ) ) {
-		$x_default_url = reset( $alternate_links );
-	}
-
-	if ( empty( $x_default_url ) ) {
-		$x_default_url = home_url( '/' );
-	}
-
-	// Keep language hreflang tags from SEO/Polylang and add only missing x-default.
-	printf(
-		'<link rel="alternate" hreflang="x-default" href="%s" />' . "\n",
-		esc_url( $x_default_url )
-	);
-}
-add_action( 'wp_head', 'bna_custom_hreflang', 1 );
 
 /**
  * Remove invalid FR hreflang for one product that redirects to EN.
@@ -1055,6 +974,100 @@ function bna_fix_invalid_fr_hreflang_for_peaks( $hreflangs ) {
 	return $hreflangs;
 }
 add_filter( 'pll_rel_hreflang_attributes', 'bna_fix_invalid_fr_hreflang_for_peaks' );
+
+/**
+ * Pretty permalink for hreflang (no ?page_id=, trailing slash).
+ */
+function bna_normalize_hreflang_permalink( $url ) {
+	if ( empty( $url ) || ! is_string( $url ) ) {
+		return null;
+	}
+
+	if ( preg_match( '/[?&]page_id=(\d+)/i', $url, $matches ) ) {
+		$page_id = (int) $matches[1];
+
+		if ( $page_id > 0 && (int) get_option( 'page_on_front' ) === $page_id ) {
+			return trailingslashit( home_url( '/' ) );
+		}
+	}
+
+	return trailingslashit( $url );
+}
+
+/**
+ * x-default URL: same page in the current language (matches the URL you are on).
+ *
+ * @param array|null $hreflangs Optional Polylang hreflang map (lang => url).
+ */
+function bna_get_hreflang_x_default_url( $hreflangs = null ) {
+	if ( is_array( $hreflangs ) ) {
+		if ( function_exists( 'pll_current_language' ) ) {
+			$lang = pll_current_language( 'slug' );
+			if ( $lang ) {
+				foreach ( array( $lang, $lang . '-' . strtoupper( $lang ) ) as $key ) {
+					if ( ! empty( $hreflangs[ $key ] ) ) {
+						return bna_normalize_hreflang_permalink( $hreflangs[ $key ] );
+					}
+				}
+			}
+		}
+
+		if ( ! empty( $hreflangs['en'] ) ) {
+			return bna_normalize_hreflang_permalink( $hreflangs['en'] );
+		}
+	}
+
+	if ( ! function_exists( 'pll_get_post' ) ) {
+		return null;
+	}
+
+	// Current language first (/fr/, /de/, /nl/, or plain EN).
+	if ( function_exists( 'pll_current_language' ) && function_exists( 'pll_translation_url' ) ) {
+		$lang = pll_current_language( 'slug' );
+		if ( $lang ) {
+			$url = pll_translation_url( $lang );
+			if ( $url ) {
+				return bna_normalize_hreflang_permalink( $url );
+			}
+		}
+	}
+
+	if ( function_exists( 'pll_translation_url' ) ) {
+		$url = pll_translation_url( 'en' );
+		if ( ! $url && function_exists( 'pll_default_language' ) ) {
+			$url = pll_translation_url( pll_default_language() );
+		}
+		if ( $url ) {
+			return bna_normalize_hreflang_permalink( $url );
+		}
+	}
+
+	$post_id = get_queried_object_id();
+
+	if ( ! $post_id ) {
+		return null;
+	}
+
+	return bna_normalize_hreflang_permalink( get_permalink( $post_id ) );
+}
+
+/**
+ * Normalize all Polylang hreflang URLs (fixes ?page_id= on any language).
+ */
+function bna_normalize_hreflang_attributes( $hreflangs ) {
+	if ( ! is_array( $hreflangs ) ) {
+		return $hreflangs;
+	}
+
+	foreach ( $hreflangs as $lang => $url ) {
+		$normalized = bna_normalize_hreflang_permalink( $url );
+		if ( $normalized ) {
+			$hreflangs[ $lang ] = $normalized;
+		}
+	}
+
+	return $hreflangs;
+}
 
 function bna_get_fallback_image_alt_text( $attachment_id = 0 ) {
 	$alt_text = '';
@@ -1145,16 +1158,51 @@ function bna_add_sr_only_h1() {
 }
 add_action( 'wp_head', 'bna_add_sr_only_h1' );
 
-add_filter('wpseo_opengraph_image', function ($image) {
-    if (strpos($image, 'dev.bnadventure.com') !== false) {
-        $image = str_replace(
-            'dev.bnadventure.com',
-            'bnadventure.com',
-            $image
-        );
-    }
-    return $image;
-});
+// add_action('template_redirect', function () {
+//     ob_start(function ($html) {
+//         return preg_replace_callback('/<img[^>]+>/i', function ($img) {
+//             $tag = $img[0];
+//             if (preg_match('/alt=["\'](.*?)["\']/', $tag, $m)) {
+//                 if (trim($m[1]) !== '') return $tag;
+//             }
+//             if (!preg_match('/src=["\'](.*?)["\']/', $tag, $src)) {
+//                 return $tag;
+//             }
+//             $url = $src[1];
+//             $id = attachment_url_to_postid($url);
+//             if ($id) {
+//                 $alt = get_post_meta($id, '_wp_attachment_image_alt', true);
+//                 if (!$alt) $alt = get_the_title($id);
+//             } else {
+//                 $alt = pathinfo(basename($url), PATHINFO_FILENAME);
+//                 $alt = str_replace(['-', '_'], ' ', $alt);
+//             }
+//             $alt = esc_attr($alt);
+
+//             if (strpos($tag, 'alt=') !== false) {
+//                 $tag = preg_replace('/alt=["\'].*?["\']/', 'alt="'.$alt.'"', $tag);
+//             } else {
+//                 $tag = str_replace('<img', '<img alt="'.$alt.'"', $tag);
+//             }
+//             return $tag;
+
+//         }, $html);
+
+//     });
+// });
+
+add_filter('wpseo_opengraph_image', 'bn_fix_og_image', 999);
+
+function bn_fix_og_image($image) {
+    if (empty($image)) return $image;
+
+    return str_replace(
+        'dev.bnadventure.com',
+        'bnadventure.com',
+        $image
+    );
+}
+
 function bna_fix_archive_pagination_query( $query ) {
     if ( is_admin() || ! $query->is_main_query() ) {
         return;
@@ -1176,3 +1224,471 @@ function bna_fix_archive_pagination_query( $query ) {
 }
 add_action( 'pre_get_posts', 'bna_fix_archive_pagination_query' );
 
+// add_action('wp_head', function () {
+//     if (is_paged()) {
+//         echo '<meta name="robots" content="noindex,follow">';
+//     }
+// });
+
+
+add_filter('user_trailingslashit', function ($url) {
+    return trailingslashit($url);
+});
+
+
+add_filter('redirect_canonical', function ($redirect_url, $requested_url) {
+    if (is_admin()) return $redirect_url;
+
+    if (trailingslashit($redirect_url) === trailingslashit($requested_url)) {
+        return false;
+    }
+
+    return $redirect_url;
+}, 10, 2);
+
+
+
+// add_filter('redirect_canonical', function($redirect_url) {
+//     return false;
+// });
+
+
+add_filter( 'pll_rel_hreflang_attributes', function ( $hreflangs ) {
+	if ( ! is_array( $hreflangs ) ) {
+		return $hreflangs;
+	}
+
+	$hreflangs = bna_normalize_hreflang_attributes( $hreflangs );
+
+	$x_default = bna_get_hreflang_x_default_url( $hreflangs );
+	if ( $x_default ) {
+		$hreflangs['x-default'] = $x_default;
+	}
+
+	return $hreflangs;
+}, 20 );
+
+
+function safe_mobile_image_fix($attr) {
+
+    if (wp_is_mobile()) {
+
+        $attr['sizes'] = '(max-width: 768px) 100vw, 768px';
+        $attr['loading'] = 'lazy';
+        $attr['decoding'] = 'async';
+    }
+
+    return $attr;
+}
+add_filter('wp_get_attachment_image_attributes', 'safe_mobile_image_fix', 20, 2);
+
+
+add_action('wp_enqueue_scripts', function () {
+
+
+    wp_dequeue_style('duplicate-post');
+    wp_deregister_style('duplicate-post');
+
+    wp_dequeue_style('block-options-style');
+	wp_deregister_style('block-options-style');
+	wp_dequeue_style('editorskit-frontend-css');
+	wp_deregister_style('editorskit-frontend-css');
+
+    if (!is_admin_bar_showing()) {
+        wp_dequeue_style('yoast-seo-adminbar');
+        wp_deregister_style('yoast-seo-adminbar');
+    }
+
+}, 9999);
+
+
+
+// function global_fix_multiple_h1_safe($buffer) {
+
+//     if (is_admin()) return $buffer;
+
+//     $count = 0;
+
+//     $buffer = preg_replace_callback('/<h1(.*?)>(.*?)<\/h1>/is', function($matches) use (&$count) {
+
+//         $count++;
+
+//         if ($count === 1) return $matches[0];
+
+//         return "<h2{$matches[1]}>{$matches[2]}</h2>";
+
+//     }, $buffer);
+
+//     return $buffer;
+// }
+
+// add_action('template_redirect', function () {
+//     ob_start('global_fix_multiple_h1_safe');
+// });
+
+
+add_action('template_redirect', function () {
+
+    $uri = $_SERVER['REQUEST_URI'];
+
+    // 🔥 DE URL FIX
+    if (strpos($uri, '/de/products/tour-peaks-of-the-balkans-trail/') !== false) {
+
+        // ndal çdo redirect canonical të WordPress
+        add_filter('redirect_canonical', '__return_false');
+
+        // siguro që nuk shkon në EN
+        status_header(200);
+
+        return;
+    }
+
+    // 🔥 NL URL FIX
+    if (strpos($uri, '/nl/products/tour-peaks-of-the-balkans-trail/') !== false) {
+
+        add_filter('redirect_canonical', '__return_false');
+
+        status_header(200);
+
+        return;
+    }
+
+}, 0);
+
+
+add_action('init', function () {
+
+    $uri = $_SERVER['REQUEST_URI'];
+
+    $blocked = [
+        '/de/peaks-of-the-balkans/peaks-of-the-balkans-map/',
+        '/nl/peaks-of-the-balkans/peaks-of-the-balkans-map/',
+    ];
+
+    foreach ($blocked as $url) {
+
+        if (strpos($uri, $url) === 0) {
+
+            remove_action('template_redirect', 'redirect_canonical');
+            add_filter('redirect_canonical', '__return_false');
+
+            header_remove('Location');
+
+            break;
+        }
+    }
+
+}, 0);
+
+function bna_fix_redirect_chains() {
+    $redirects = array(
+        '/destination/peaks-of-the-balkans-trail/'                          => '/peaks-of-the-balkans/',
+        '/products/via-ferrata-mat-and-ari/'                                => '/products/onvia-ferrata-mat-en-ari/',
+        '/products/guided-high-scardus-2024/'                               => '/products/guided-high-scardus-2026/',
+        '/nl/products/via-ferrata-mat-and-ari-2/'                           => '/nl/products/ontdek-via-ferrata-mat-en-ari/',
+    );
+
+    $current_path = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH );
+
+    foreach ( $redirects as $from => $to ) {
+        if ( $current_path === $from ) {
+            wp_redirect( home_url( $to ), 301 );
+            exit;
+        }
+    }
+}
+add_action( 'template_redirect', 'bna_fix_redirect_chains' );
+
+
+add_filter( 'wpseo_hreflang_output', function ( $output ) {
+	$parsed_hreflangs = array();
+
+	if ( preg_match_all( '/<link rel="alternate" href="([^"]+)" hreflang="([a-z]{2}(?:-[A-Za-z]+)?)" \/>/i', $output, $matches, PREG_SET_ORDER ) ) {
+		foreach ( $matches as $match ) {
+			$parsed_hreflangs[ $match[2] ] = $match[1];
+		}
+	}
+
+	$x_default = bna_get_hreflang_x_default_url( $parsed_hreflangs );
+
+	if ( ! $x_default && function_exists( 'pll_current_language' ) ) {
+		$lang = pll_current_language( 'slug' );
+		if ( $lang && ! empty( $parsed_hreflangs[ $lang ] ) ) {
+			$x_default = $parsed_hreflangs[ $lang ];
+		}
+	}
+
+	if ( ! $x_default && ! empty( $parsed_hreflangs['en'] ) ) {
+		$x_default = $parsed_hreflangs['en'];
+	}
+
+	$x_default = bna_normalize_hreflang_permalink( $x_default );
+
+	if ( ! $x_default ) {
+		return $output;
+	}
+
+	$output = preg_replace(
+		'/<link rel="alternate" href="[^"]+" hreflang="x-default"[^>]*\/?>/i',
+		'',
+		$output
+	);
+
+	$output .= "\n" . '<link rel="alternate" href="' . esc_url( $x_default ) . '" hreflang="x-default" />';
+
+	return $output;
+}, 99 );
+
+
+add_action('template_redirect', function () {
+
+    if (is_admin()) return;
+
+    if (!is_singular()) return;
+
+    $current_url = home_url($_SERVER['REQUEST_URI']);
+
+    if (strpos($current_url, '/de/products/peaks-of-the-balkans-trail/') === false) {
+        return;
+    }
+
+    ob_start(function ($html) {
+
+        $html = str_replace(
+            '<link rel="alternate" href="https://bnadventure.com/products/peaks-of-the-balkans-trail/" hreflang="en" />',
+            '<link rel="alternate" href="https://bnadventure.com/peaks-of-the-balkans/" hreflang="en" />',
+            $html
+        );
+
+        return $html;
+    });
+
+});
+
+
+add_action('template_redirect', function () {
+
+    if (is_admin() || wp_doing_ajax()) return;
+
+    $uri = $_SERVER['REQUEST_URI'] ?? '';
+
+    if (strpos($uri, '/products/peaks-of-the-balkans-trail/') !== false) {
+
+        $target = home_url('/peaks-of-the-balkans/');
+
+        if (!defined('DONOTCACHEPAGE')) {
+            define('DONOTCACHEPAGE', true);
+        }
+
+        remove_action('template_redirect', 'redirect_canonical');
+
+        add_filter('redirect_canonical', '__return_false', 9999);
+
+        nocache_headers();
+
+        wp_safe_redirect($target, 301);
+        exit;
+    }
+
+}, 0);
+
+
+function move_jquery_to_footer() {
+    if (!is_admin()) {
+        wp_deregister_script('jquery');
+        wp_register_script('jquery', includes_url('/js/jquery/jquery.min.js'), false, null, true);
+        wp_enqueue_script('jquery');
+    }
+}
+add_action('wp_enqueue_scripts', 'move_jquery_to_footer');
+
+function remove_noindex_for_pagination() {
+    if ( is_paged() ) {
+        remove_action( 'wp_head', 'wp_no_robots' );
+    }
+}
+add_action( 'wp_head', 'remove_noindex_for_pagination', 1 );
+
+add_action('wp_head', function() {
+    if (isset($_GET['envira-downloads-gallery-id']) || isset($_GET['envira-downloads-gallery-image'])) {
+        $clean_url = strtok($_SERVER['REQUEST_URI'], '?');
+        echo '<link rel="canonical" href="' . home_url($clean_url) . '" />';
+    }
+}, 1);
+
+// add_action('wp_head', function() {
+//     if (is_paged()) {
+//         global $wp;
+//         $canonical = home_url(add_query_arg(array(), $wp->request));
+//         $canonical = preg_replace('/\/page\/[0-9]+\/?$/', '/', $canonical);
+//         echo '<link rel="canonical" href="' . esc_url($canonical) . '" />';
+//     }
+// });
+
+add_action('template_redirect', function() {
+    if (is_author()) {
+        global $wp_query;
+        $wp_query->set_404();
+        status_header(404);
+        nocache_headers();
+        include get_query_template('404');
+        exit;
+    }
+});
+
+add_action('wp_head', function() {
+    if (is_front_page()) {
+        echo '<link rel="preload" as="image" href="https://bnadventure.com/wp-content/uploads/2026/05/BNA_2173-e1601378743829-1024x741-1-1-768x556.webp" fetchpriority="high">';
+    }
+}, 1);
+
+
+add_filter('jpeg_quality', fn($q) => 65);
+add_filter('wp_editor_set_quality', fn($q) => 65);
+
+// add_action('template_redirect', function() {
+//     if (is_admin()) return;
+//     ob_start(function($html) {
+//         return preg_replace('/<link[^>]+editorskit-frontend-css[^>]+>/i', '', $html);
+//     });
+// });
+
+
+add_image_size('adventure-card', 474, 350, true);
+
+
+add_filter( 'pll_rel_hreflang_attributes', function( $hreflangs ) {
+    if ( ! is_array( $hreflangs ) ) return $hreflangs;
+
+    if ( is_page() ) {
+        $post_id = get_queried_object_id();
+        $slug = get_post_field( 'post_name', $post_id );
+
+        if ( $slug === 'peaks-of-the-balkans' ) {
+            $hreflangs['de'] = 'https://bnadventure.com/de/balkanische-gipfel/';
+        }
+    }
+
+    return $hreflangs;
+}, 25 );
+
+add_filter( 'pll_rel_hreflang_attributes', function( $hreflangs ) {
+    if ( ! is_array( $hreflangs ) ) return $hreflangs;
+
+    $post_id = get_queried_object_id();
+    $slug    = get_post_field( 'post_name', $post_id );
+
+    if ( $slug !== 'tour-peaks-of-the-balkans-trail' ) {
+        return $hreflangs;
+    }
+
+    $hreflangs['en'] = 'https://bnadventure.com/products/tour-peaks-of-the-balkans-trail/';
+    $hreflangs['fr'] = 'https://bnadventure.com/fr/products/tour-peaks-of-the-balkans-trail/';
+    $hreflangs['de'] = 'https://bnadventure.com/de/produkte/tour-gipfeltouren-auf-dem-balkan/gefuhrte-touren/';
+    $hreflangs['nl'] = 'https://bnadventure.com/nl/products/tour-peaks-of-the-balkans-trail/';
+
+    return $hreflangs;
+}, 30 );
+
+add_action('template_redirect', function () {
+    if (is_admin()) return;
+    ob_start(function ($html) {
+        // Hiq editorskit CSS
+        $html = preg_replace('/<link[^>]+editorskit-frontend-css[^>]+>/i', '', $html);
+
+        // Fix image alts
+        $html = preg_replace_callback('/<img[^>]+>/i', function ($img) {
+            $tag = $img[0];
+            if (preg_match('/alt=["\']([^"\']*)["\']/', $tag, $m) && trim($m[1]) !== '') {
+                return $tag;
+            }
+            if (!preg_match('/src=["\']([^"\']+)["\']/', $tag, $src)) return $tag;
+            $url = $src[1];
+            $id  = attachment_url_to_postid($url);
+            if ($id) {
+                $alt = get_post_meta($id, '_wp_attachment_image_alt', true);
+                if (!$alt) $alt = get_the_title($id);
+            } else {
+                $alt = pathinfo(basename($url), PATHINFO_FILENAME);
+                $alt = str_replace(['-', '_'], ' ', $alt);
+            }
+            $alt = esc_attr($alt);
+            if (strpos($tag, 'alt=') !== false) {
+                $tag = preg_replace('/alt=["\'].*?["\']/', 'alt="'.$alt.'"', $tag);
+            } else {
+                $tag = str_replace('<img', '<img alt="'.$alt.'"', $tag);
+            }
+            return $tag;
+        }, $html);
+
+        return $html;
+    });
+});
+
+
+add_action( 'wp_head', function () {
+    echo '<style>
+    @font-face { font-family: "Prompt"; font-display: swap; }
+    </style>';
+}, 1 );
+
+function dergo_te_dhenat_ne_google_sheets($contact_form) {
+
+    if ((int)$contact_form->id() !== 7071) return;
+
+    $submission = WPCF7_Submission::get_instance();
+    if (!$submission) return;
+
+    $data = $submission->get_posted_data();
+
+    $website = parse_url(home_url(), PHP_URL_HOST);
+
+    $ip_address = $_SERVER['REMOTE_ADDR'] ?? '';
+    $ip_address = trim($ip_address);
+
+    if (filter_var($ip_address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+        $parts = explode('.', $ip_address);
+        $parts[3] = '0';
+        $ip_address = implode('.', $parts);
+    }
+
+    $country = '';
+
+    if (!empty($ip_address) && !in_array($ip_address, ['127.0.0.1', '::1'])) {
+
+        $geo = wp_remote_get("https://ipwho.is/{$ip_address}", ['timeout' => 5]);
+
+        if (!is_wp_error($geo)) {
+            $geo_body = json_decode(wp_remote_retrieve_body($geo), true);
+
+            if (!empty($geo_body['success'])) {
+                $country = sanitize_text_field($geo_body['country'] ?? '');
+            }
+        }
+    }
+
+    $script_url = 'https://script.google.com/macros/s/AKfycbyJLOMCtwn3DEAsM09Ze7FPYGzT3rJtQClu4j4s91gxyWmLEZCeaeGYqindovHhf5eM/exec';
+
+    $body = [
+        'Website' => $website,
+        'Emri'    => sanitize_text_field($data['your-name'] ?? ''),
+        'Email'   => sanitize_email($data['your-email'] ?? ''),
+        'Mesazhi' => sanitize_textarea_field($data['your-message'] ?? ''),
+        'IP'      => $ip_address,
+        'Shteti'  => $country,
+        'Koha'    => current_time('Y-m-d H:i:s'),
+    ];
+
+    $response = wp_remote_post($script_url, [
+        'body'    => $body,
+        'timeout' => 15,
+    ]);
+
+    if (is_wp_error($response)) {
+        error_log('GAS ERROR: ' . $response->get_error_message());
+    } else {
+        error_log('GAS RESPONSE: ' . wp_remote_retrieve_body($response));
+    }
+}
+
+add_action('wpcf7_before_send_mail', 'dergo_te_dhenat_ne_google_sheets');
