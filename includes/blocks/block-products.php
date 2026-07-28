@@ -77,7 +77,7 @@
 
                 <div class="title">
                     <span></span>
-                    <h5 class="box-title"><?php the_title(); ?></h5>
+                    <h3 class="box-title"><?php the_title(); ?></h3>
                 </div>
 
                 <?php the_excerpt(); ?>

@@ -101,3 +101,12 @@
     });
 
 })(jQuery); 
+
+
+document.addEventListener('wpcf7beforesubmit', function (event) {
+    const pageUrlField = event.target.querySelector('#page-url');
+
+    if (pageUrlField) {
+        pageUrlField.value = window.location.href;
+    }
+});
