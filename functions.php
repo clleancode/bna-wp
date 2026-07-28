@@ -1682,7 +1682,7 @@ function dergo_te_dhenat_ne_google_sheets($contact_form) {
         }
     }
 
-    $script_url = 'https://script.google.com/macros/s/AKfycbzdB699B4rgvKwDkdkalLUM5fML02LUa_pZaMsj49b-UQjQZETLfXD2Z5Zr_0OCEU0QOA/exec';
+	$script_url = 'https://script.google.com/macros/s/AKfycbyJLOMCtwn3DEAsM09Ze7FPYGzT3rJtQClu4j4s91gxyWmLEZCeaeGYqindovHhf5eM/exec';
 
     $body = [
         'Website' => $page_url,
