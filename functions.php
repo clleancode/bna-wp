@@ -1632,16 +1632,26 @@ add_action( 'wp_head', function () {
     </style>';
 }, 1 );
 
+
 function dergo_te_dhenat_ne_google_sheets($contact_form) {
 
-    if ((int)$contact_form->id() !== 7071) return;
+    if ((int) $contact_form->id() !== 7071) {
+        return;
+    }
 
     $submission = WPCF7_Submission::get_instance();
-    if (!$submission) return;
+    if (!$submission) {
+        return;
+    }
 
     $data = $submission->get_posted_data();
 
     $website = parse_url(home_url(), PHP_URL_HOST);
+    $page_url = wp_get_referer();
+
+	if (empty($page_url)) {
+		$page_url = home_url(add_query_arg([], $GLOBALS['wp']->request));
+	}
 
     $ip_address = $_SERVER['REMOTE_ADDR'] ?? '';
     $ip_address = trim($ip_address);
@@ -1654,9 +1664,14 @@ function dergo_te_dhenat_ne_google_sheets($contact_form) {
 
     $country = '';
 
-    if (!empty($ip_address) && !in_array($ip_address, ['127.0.0.1', '::1'])) {
+    if (!empty($ip_address) && !in_array($ip_address, ['127.0.0.1', '::1'], true)) {
 
-        $geo = wp_remote_get("https://ipwho.is/{$ip_address}", ['timeout' => 5]);
+        $geo = wp_remote_get(
+            "https://ipwho.is/{$ip_address}",
+            [
+                'timeout' => 5,
+            ]
+        );
 
         if (!is_wp_error($geo)) {
             $geo_body = json_decode(wp_remote_retrieve_body($geo), true);
@@ -1667,22 +1682,25 @@ function dergo_te_dhenat_ne_google_sheets($contact_form) {
         }
     }
 
-    $script_url = 'https://script.google.com/macros/s/AKfycbyJLOMCtwn3DEAsM09Ze7FPYGzT3rJtQClu4j4s91gxyWmLEZCeaeGYqindovHhf5eM/exec';
+    $script_url = 'https://script.google.com/macros/s/AKfycbzdB699B4rgvKwDkdkalLUM5fML02LUa_pZaMsj49b-UQjQZETLfXD2Z5Zr_0OCEU0QOA/exec';
 
     $body = [
-        'Website' => $website,
-        'Emri'    => sanitize_text_field($data['your-name'] ?? ''),
-        'Email'   => sanitize_email($data['your-email'] ?? ''),
-        'Mesazhi' => sanitize_textarea_field($data['your-message'] ?? ''),
-        'IP'      => $ip_address,
-        'Shteti'  => $country,
-        'Koha'    => current_time('Y-m-d H:i:s'),
+        'Website' => $page_url,
+        'Emri'     => sanitize_text_field($data['your-name'] ?? ''),
+        'Email'    => sanitize_email($data['your-email'] ?? ''),
+        'Mesazhi'  => sanitize_textarea_field($data['your-message'] ?? ''),
+        'IP'       => $ip_address,
+        'Shteti'   => $country,
+        'Koha'     => current_time('Y-m-d H:i:s'),
     ];
 
-    $response = wp_remote_post($script_url, [
-        'body'    => $body,
-        'timeout' => 15,
-    ]);
+    $response = wp_remote_post(
+        $script_url,
+        [
+            'body'    => $body,
+            'timeout' => 15,
+        ]
+    );
 
     if (is_wp_error($response)) {
         error_log('GAS ERROR: ' . $response->get_error_message());
@@ -1690,5 +1708,6 @@ function dergo_te_dhenat_ne_google_sheets($contact_form) {
         error_log('GAS RESPONSE: ' . wp_remote_retrieve_body($response));
     }
 }
+
 
 add_action('wpcf7_before_send_mail', 'dergo_te_dhenat_ne_google_sheets');

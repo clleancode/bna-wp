@@ -103,10 +103,18 @@
 })(jQuery); 
 
 
-document.addEventListener('wpcf7beforesubmit', function (event) {
-    const pageUrlField = event.target.querySelector('#page-url');
+function setContactFormPageUrl(form) {
+    form.querySelectorAll('input[name="page-url"]').forEach(function (field) {
+        field.value = window.location.href;
+    });
+}
 
-    if (pageUrlField) {
-        pageUrlField.value = window.location.href;
-    }
+document.addEventListener('DOMContentLoaded', function () {
+    setContactFormPageUrl(document);
 });
+
+document.addEventListener('submit', function (event) {
+    if (event.target.matches('.wpcf7-form')) {
+        setContactFormPageUrl(event.target);
+    }
+}, true);
