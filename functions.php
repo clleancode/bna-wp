@@ -1511,8 +1511,11 @@ add_action( 'wp_head', 'remove_noindex_for_pagination', 1 );
 
 add_action('wp_head', function() {
     if (isset($_GET['envira-downloads-gallery-id']) || isset($_GET['envira-downloads-gallery-image'])) {
-        $clean_url = strtok($_SERVER['REQUEST_URI'], '?');
-        echo '<link rel="canonical" href="' . home_url($clean_url) . '" />';
+        $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '/';
+        $clean_path  = wp_parse_url( $request_uri, PHP_URL_PATH );
+        $clean_path  = is_string( $clean_path ) ? $clean_path : '/';
+
+        echo '<link rel="canonical" href="' . esc_url( home_url( $clean_path ) ) . '" />';
     }
 }, 1);
 
