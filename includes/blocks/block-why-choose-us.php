@@ -17,7 +17,7 @@
                         <p><?php the_sub_field('row-text'); ?></p>
                     </div>
                 </div>
-            <?php endwhile; wp_reset_postdata(); ?> 
+            <?php endwhile; ?> 
         </div>
     </div>
 </div>

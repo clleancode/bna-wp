@@ -12,5 +12,5 @@
         ?>
             <?php echo wp_get_attachment_image(get_sub_field('image'), 'full' , false ,array('class' => 'full-width')); ?> 
         <?php endif; ?>
-    <?php endwhile; wp_reset_postdata(); ?>  
+    <?php endwhile; ?>  
 </div>

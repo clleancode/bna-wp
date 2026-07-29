@@ -36,7 +36,7 @@
                     }
                     $topicIndex++;
                 ?>
-            <?php endwhile; wp_reset_postdata(); ?>
+            <?php endwhile; ?>
         </div>
     </div>
     <?php $accordionIndex = 0; ?>
@@ -54,7 +54,7 @@
                                 <p><?php the_sub_field('accordian_paragraph'); ?></p>
                             </div>
                         </div>
-                    <?php endwhile; wp_reset_postdata(); ?>
+                    <?php endwhile; ?>
                 </div>
                 <div class="topic--video wrapper">
                 <?php echo wp_get_attachment_image(get_sub_field('photo_of_video'), 'full'); ?> 
@@ -71,7 +71,7 @@
             $accordionIndex++; 
             $isFirstAccordion = false; 
         ?>
-    <?php endwhile; wp_reset_postdata(); ?>
+    <?php endwhile; ?>
 </div>
 
 

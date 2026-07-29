@@ -20,7 +20,7 @@
                 </div>
                 <span>Balkan Natural Adventure</span>
             </div>
-			 <?php endwhile; wp_reset_postdata(); ?>  
+			 <?php endwhile; ?>  
         </div>
         <div class="swiper-button-next"><span class="icon-arrow-right"></span></div>
         <div class="swiper-button-prev"><span class="icon-arrow-right"></span></div>

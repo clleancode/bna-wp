@@ -16,7 +16,6 @@
                     <p><?php echo get_the_excerpt($destination->ID); ?></p>
                 </a>
             <?php
-                wp_reset_postdata();
                 endwhile;
                 endif;
             ?>

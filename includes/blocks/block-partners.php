@@ -13,5 +13,5 @@
             <?php echo wp_get_attachment_image(get_sub_field('partners_logo'), 'full'); ?> 
         </a>
         <?php endif; ?>
-    <?php endwhile; wp_reset_postdata(); ?>
+    <?php endwhile; ?>
 </div>

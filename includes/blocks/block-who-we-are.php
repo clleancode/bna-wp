@@ -28,7 +28,7 @@
                             <span class="line"></span>
                         </div>
                     </div>
-                <?php endwhile; wp_reset_postdata(); ?> 
+                <?php endwhile; ?> 
             </div>
         </div>
     </div>

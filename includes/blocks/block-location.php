@@ -31,7 +31,7 @@
                 </div>
             </a>
             <?php endif; ?>
-        <?php endwhile; wp_reset_postdata(); ?> 
+        <?php endwhile; ?> 
     </div>
     <?php 
         $link = get_field('button');

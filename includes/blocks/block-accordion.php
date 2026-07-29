@@ -11,6 +11,6 @@
                         <p><?php the_sub_field('accordion_paragraph'); ?></p>
                     </div>
                 </div>
-            <?php endwhile; wp_reset_postdata(); ?>
+            <?php endwhile; ?>
         </div>
-<?php endwhile; wp_reset_postdata(); ?>
+<?php endwhile; ?>

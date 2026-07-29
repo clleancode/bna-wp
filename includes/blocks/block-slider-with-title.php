@@ -11,7 +11,7 @@
           			</div>
         		</div>
 			</a>
-			<?php endwhile; wp_reset_postdata(); ?>
+			<?php endwhile; ?>
         </div>
     </div>
     <div class="pagination-and-navigation">

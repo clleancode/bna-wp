@@ -8,7 +8,7 @@
                 <p><strong><?php the_sub_field('pdf_title'); ?></strong></p> 
                 <span class="icon-arrow-right"></span>
             </a>
-        <?php endwhile; wp_reset_postdata(); ?>
+        <?php endwhile; ?>
     </div>
 </div>
 

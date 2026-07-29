@@ -71,10 +71,10 @@
                         <ul>
                             <?php while(have_rows('pages_link', 'option')): the_row(); $numberOfSlides++; ?>
                                 <li><a href="<?php the_sub_field('page_link', 'option'); ?>"><?php the_sub_field('page_title', 'option'); ?></a></li>
-                            <?php endwhile; wp_reset_postdata(); ?> 
+                            <?php endwhile; ?> 
                         </ul>
                     </div>
-                <?php endwhile; wp_reset_postdata(); ?> 
+                <?php endwhile; ?> 
                 <div class="row">
                    <?php the_field('content', 'option'); ?>
                 </div>
@@ -84,7 +84,7 @@
                 <div class="footer-bottom--left">
                     <?php while(have_rows('site_links', 'option')): the_row(); $numberOfSlides++; ?>
                         <a href="<?php the_sub_field('site_link', 'option'); ?>"><?php the_sub_field('site_title', 'option'); ?></a>
-                    <?php endwhile; wp_reset_postdata(); ?> 
+                    <?php endwhile; ?> 
                     
                 </div>
             </div>

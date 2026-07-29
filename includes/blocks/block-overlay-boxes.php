@@ -15,6 +15,6 @@
                 <span data-number="<?php echo esc_html( get_sub_field('number') ); ?>">0</span>
                 <h6><?php the_sub_field('title'); ?></h6>
             </div>
-        <?php endwhile; wp_reset_postdata(); ?>  
+        <?php endwhile; ?>  
     </div>  
 </div>

@@ -33,7 +33,7 @@
         </div>
         <?php echo wp_get_attachment_image(get_sub_field('image'), 'full'); ?> 
       </div>
-		<?php endwhile; wp_reset_postdata(); ?>
+		<?php endwhile; ?>
     </div>
   </div>
   <?php echo wp_get_attachment_image(get_field('background_image'), 'full'); ?> 

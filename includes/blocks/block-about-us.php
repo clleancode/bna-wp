@@ -15,7 +15,7 @@
                     <ul>
                         <?php while(have_rows('about_us--check')): the_row(); $numberOfSlides++; ?>
                             <li><span class="icon-check"></span><?php the_sub_field('text'); ?></li>
-                        <?php endwhile; wp_reset_postdata(); ?> 
+                        <?php endwhile; ?> 
                     </ul>
                 <?php endif; ?>
                     <?php 
