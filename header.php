@@ -69,7 +69,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         <div class="menu-mobile--buttons"> 
                             <div class="search-box">
                                 <form role="search" method="get" class="search-form" action="<?php echo esc_url( home_url( '/' ) ); ?>">
-                                    <input type="search" placeholder="<?php echo esc_attr_x( 'Search...', 'placeholder', 'your-theme-textdomain' ); ?>" value="<?php echo get_search_query(); ?>" name="s" />
+                                    <input type="search" placeholder="<?php echo esc_attr_x( 'Search...', 'placeholder', 'balkan-nature-adventure' ); ?>" value="<?php echo get_search_query(); ?>" name="s" />
                                     <button type="submit" class="btnSearch"><span id="search" class="icon-search"></span></button>
                                 </form>
                             </div>
@@ -96,7 +96,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
           
                 <div class="overlay-content">
                     <form role="search" method="get" class="search-form" action="<?php echo esc_url( home_url( '/' ) ); ?>">
-                        <input type="search" placeholder="<?php echo esc_attr_x( 'Search...', 'placeholder', 'your-theme-textdomain' ); ?>" value="<?php echo get_search_query(); ?>" name="s" />
+                        <input type="search" placeholder="<?php echo esc_attr_x( 'Search...', 'placeholder', 'balkan-nature-adventure' ); ?>" value="<?php echo get_search_query(); ?>" name="s" />
                         <button type="submit" class="btnSearch">
 							<span></span>
 							<span></span>
