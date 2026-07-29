@@ -20,7 +20,7 @@
         ?>
             <div class="gallery-boxes--inner">
                 <a href="<?php the_permalink(); ?>" class="gallery-box">
-                    <?php echo wp_get_attachment_image($thumbnail_id, 'full', false, array('alt' => '') ); ?> 
+                    <?php echo wp_get_attachment_image( $thumbnail_id, 'adventure-card' ); ?> 
                     <div class="gallery-box-content">
                         <h3><?php the_title(); ?></h3>
                         <div class="content--subtitle">

@@ -13,7 +13,7 @@
                 <div class="post">
                     <?php if (has_post_thumbnail()) : ?>
                         <div class="post-image">
-                            <?php the_post_thumbnail('full'); ?>
+                            <?php the_post_thumbnail( 'adventure-card' ); ?>
                         </div>
                     <?php endif; ?>
                     <div class="post-content">

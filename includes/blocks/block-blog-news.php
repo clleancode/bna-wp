@@ -24,7 +24,7 @@
             <a class="blog-box" href="<?php echo esc_url(get_the_permalink()); ?>">
                 <?php
                     $thumbnail_id = get_post_thumbnail_id( get_the_ID() );
-                    echo wp_get_attachment_image( $thumbnail_id, 'full' );
+                    echo wp_get_attachment_image( $thumbnail_id, 'adventure-card' );
                 ?>
                 <div class="about-blog">
                     <h4><?php the_title(); ?></h4>
@@ -82,7 +82,7 @@
                 ?>
                 <a href="<?php echo esc_url(get_the_permalink()); ?>" class="recent-news-box">
                     <?php if ($thumbnail_id): ?>
-                        <?php echo wp_get_attachment_image($thumbnail_id, 'full', false, array('alt' => get_the_title())); ?>
+                        <?php echo wp_get_attachment_image($thumbnail_id, 'medium', false, array('alt' => get_the_title())); ?>
                     <?php endif; ?>
                     <div class="news--info">
                         <h6><?php the_title(); ?></h6>

@@ -16,7 +16,7 @@
                     $link_target = $link['target'] ? $link['target'] : '_self';
             ?>
             <a class="box" href="<?php echo esc_url( $link_url ); ?>">
-            <?php echo wp_get_attachment_image(get_sub_field('box_image'), 'full'); ?> 
+            <?php echo wp_get_attachment_image(get_sub_field('box_image'), 'adventure-card'); ?> 
                 <div class="box--inner">
                     <div class="title">
                         <span></span>

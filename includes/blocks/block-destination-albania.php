@@ -30,7 +30,7 @@
 					if (has_post_thumbnail()) {
 						echo wp_get_attachment_image(
 							get_post_thumbnail_id(),
-							'full', 
+							'adventure-card', 
 							false,
 							array('alt' => get_the_title())
 						);

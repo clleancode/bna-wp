@@ -22,7 +22,7 @@
             <a class="blog-box" href="<?php echo esc_url(get_the_permalink()); ?>" aria-label="<?php the_title(); ?>">
                 <?php
                     $thumbnail_id = get_post_thumbnail_id( get_the_ID() );
-                    echo wp_get_attachment_image( $thumbnail_id, 'full' );
+                    echo wp_get_attachment_image( $thumbnail_id, 'adventure-card' );
                 ?>
                 <div class="about-blog">
                     <h4><?php the_title(); ?></h4>

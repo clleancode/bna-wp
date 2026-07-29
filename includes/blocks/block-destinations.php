@@ -8,7 +8,7 @@
 
             ?>
                 <a href="<?php the_permalink(); ?>" class="adventure--box">
-                    <?php echo wp_get_attachment_image(get_post_thumbnail_id($destination->ID), 'full'); ?>
+                    <?php echo wp_get_attachment_image(get_post_thumbnail_id($destination->ID), 'adventure-card'); ?>
                     <div class="title">
                         <span></span>
                         <h5 class="box-title"><?php echo $destination->post_title; ?></h5>
