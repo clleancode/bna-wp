@@ -59,7 +59,41 @@
 function balkan_nature_adventure_scripts() {
 	$theme_dir     = get_template_directory();
 	$theme_dir_uri = get_template_directory_uri();
-	$style_dir     = get_stylesheet_directory();
+	$post          = get_queried_object();
+	$post_content  = $post instanceof WP_Post ? $post->post_content : '';
+
+	$has_any_block = static function ( $block_names ) use ( $post_content ) {
+		foreach ( $block_names as $block_name ) {
+			if ( has_block( $block_name, $post_content ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	};
+
+	$is_location_page = is_page_template( 'location.php' ) || is_page( 'location' );
+
+	$needs_swiper = $is_location_page || $has_any_block(
+		array(
+			'acf/block-home--banner-slider',
+			'acf/block-testimonial',
+			'acf/block-slider',
+			'acf/block-header-slider',
+			'acf/block-slider-with-title',
+			'acf/block-location-testimonial',
+		)
+	);
+
+	$needs_fancybox = $is_location_page || $has_any_block(
+		array(
+			'acf/block-video',
+			'acf/block-tab-with-accordion',
+			'acf/block-slider',
+			'acf/block-slider-with-title',
+			'acf/block-single-gallery',
+		)
+	);
 
 	// Styles.
 	// wp_enqueue_style(
@@ -83,24 +117,26 @@ function balkan_nature_adventure_scripts() {
 	// 	file_exists( $theme_dir . '/css/fancybox.min.css' ) ? filemtime( $theme_dir . '/css/fancybox.min.css' ) : null
 	// );
 
-	// Scripts.
-	wp_enqueue_script( 'jquery' );
+	// Load vendor scripts only on pages that use their blocks.
+	if ( $needs_fancybox ) {
+		wp_enqueue_script(
+			'fancybox',
+			$theme_dir_uri . '/js/fancybox.min.js',
+			array( 'jquery' ),
+			file_exists( $theme_dir . '/js/fancybox.min.js' ) ? filemtime( $theme_dir . '/js/fancybox.min.js' ) : '3.5.8',
+			true
+		);
+	}
 
-	wp_enqueue_script(
-		'fancybox',
-		$theme_dir_uri . '/js/fancybox.min.js',
-		array( 'jquery' ),
-		file_exists( $theme_dir . '/js/fancybox.min.js' ) ? filemtime( $theme_dir . '/js/fancybox.min.js' ) : '3.5.8',
-		true
-	);
-
-	wp_enqueue_script(
-		'swiper',
-		$theme_dir_uri . '/js/swiper.min.js',
-		array(),
-		file_exists( $theme_dir . '/js/swiper.min.js' ) ? filemtime( $theme_dir . '/js/swiper.min.js' ) : '10.0.1',
-		true
-	);
+	if ( $needs_swiper ) {
+		wp_enqueue_script(
+			'swiper',
+			$theme_dir_uri . '/js/swiper.min.js',
+			array(),
+			file_exists( $theme_dir . '/js/swiper.min.js' ) ? filemtime( $theme_dir . '/js/swiper.min.js' ) : '10.0.1',
+			true
+		);
+	}
 
 	wp_enqueue_script(
 		'main-js',
@@ -109,14 +145,6 @@ function balkan_nature_adventure_scripts() {
 		file_exists( $theme_dir . '/js/script.js' ) ? filemtime( $theme_dir . '/js/script.js' ) : null,
 		true
 	);
-
-     wp_enqueue_script(
-         'bundle-js',
-         $theme_dir_uri . '/js/bundle.js',
-         array(),
-         filemtime($theme_dir . '/js/bundle.js'),
-         true
-     );
 
 	wp_localize_script(
 		'main-js',
@@ -908,20 +936,13 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 	add_filter( 'script_loader_tag', function ( $tag, $handle ) {
 		if ( is_admin() ) return $tag;
 
-		$delay = array( 'swiper', 'bundle-js', 'fancybox', 'main-js' );
+		$deferred_scripts = array( 'swiper', 'fancybox', 'main-js' );
 
-		if ( ! in_array( $handle, $delay, true ) ) return $tag;
+		if ( ! in_array( $handle, $deferred_scripts, true ) ) return $tag;
 
-		if ( ! preg_match( '/src=["\']([^"\']+)["\']/', $tag, $matches ) ) return $tag;
-		$src = $matches[1];
-		$timeout = ( $handle === 'swiper' ) ? 2000 : 3000;
+		if ( false !== strpos( $tag, ' defer' ) ) return $tag;
 
-		return '<script>setTimeout(function(){' .
-			'var s=document.createElement("script");' .
-			's.src="' . esc_js( $src ) . '";' .
-			's.defer=true;' .
-			'document.body.appendChild(s);' .
-			'},' . $timeout . ');</script>' . "\n";
+		return str_replace( '<script ', '<script defer ', $tag );
 	}, 10, 2 );
 
 

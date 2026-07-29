@@ -22,6 +22,109 @@
             $(this).css({transition: "all .3s ease-in-out"});
         });
 
+        // ===== Mobile menu =====
+        $(".burger-menu").on("click", function() {
+            const menuItems = $(".menu-mobile-item");
+
+            if ($(this).hasClass("active")) {
+                menuItems.each(function(index) {
+                    $(".menu-mobile-item:eq(" + index + ")").finish().delay(0).animate({opacity: 0}, 20);
+                });
+                $(this).removeClass("active");
+                $(".mobile-menu").delay(100).slideUp("medium");
+            } else {
+                $(".mobile-menu").slideDown("medium");
+                $(this).addClass("active");
+                menuItems.each(function(index) {
+                    $(".menu-mobile-item:eq(" + index + ")").finish().delay(0).animate({opacity: 1}, 20);
+                });
+            }
+        });
+
+        // ===== Sliders =====
+        if (typeof window.Swiper !== "undefined") {
+            if ($(".myTestimonial").length) {
+                new window.Swiper(".myTestimonial", {
+                    direction: "vertical",
+                    loop: true,
+                    spaceBetween: 30,
+                    slidesPerView: 1,
+                    effect: "fade",
+                    autoHeight: true,
+                    navigation: {
+                        nextEl: ".swiper-button-next",
+                        prevEl: ".swiper-button-prev"
+                    },
+                    pagination: {
+                        el: ".swiper-pagination",
+                        clickable: true
+                    }
+                });
+            }
+
+            if ($(".campSlider").length) {
+                new window.Swiper(".campSlider", {
+                    slidesPerView: 1,
+                    spaceBetween: 30,
+                    loop: true,
+                    breakpoints: {
+                        992: {slidesPerView: 2},
+                        1200: {slidesPerView: 3}
+                    },
+                    navigation: {
+                        nextEl: ".camping--slider .swiper-button-next",
+                        prevEl: ".camping--slider .swiper-button-prev"
+                    },
+                    pagination: {
+                        el: ".camping--slider .swiper-pagination",
+                        clickable: true
+                    }
+                });
+            }
+
+            if ($(".location-testimonial-slider").length) {
+                new window.Swiper(".location-testimonial-slider", {
+                    loop: true,
+                    speed: 400,
+                    autoplay: {
+                        delay: 8000,
+                        disableOnInteraction: false
+                    }
+                });
+            }
+        }
+
+        // ===== Accordion tabs =====
+        if ($(".accordion").length) {
+            $(document).on("click", ".accordion--card-header", function() {
+                if ($(this).hasClass("active")) {
+                    $(this).removeClass("active");
+                    $(this).next(".accordion--card-body").slideUp("medium");
+                    $(this).children(".paragraph").removeClass("text-Class");
+                    $(this).children(".arrow").removeClass("rotate-arrow");
+                } else {
+                    $(".accordion--card-header.active").removeClass("active");
+                    $(".accordion--card-body").slideUp("medium");
+                    $(".paragraph").removeClass("text-Class");
+                    $(".arrow").removeClass("rotate-arrow");
+                    $(this).addClass("active");
+                    $(this).next(".accordion--card-body").slideDown("medium");
+                    $(this).children(".paragraph").addClass("text-Class");
+                    $(this).children(".arrow").addClass("rotate-arrow");
+                }
+            });
+        }
+
+        $(".topic--box").on("click", function() {
+            if (!$(this).hasClass("active")) {
+                const index = $(this).index();
+                $(".topic--box.active").removeClass("active");
+                $(this).addClass("active");
+                $(".topic--block.active").fadeOut(0).removeClass("active");
+                $(".topic--block").eq(index).fadeIn().addClass("active");
+            }
+        });
+
         // // ===== Home Slider (Swiper) =====
         // if ($(".myHeader").length) {
         //     var swiper = new Swiper(".myHeader", {
