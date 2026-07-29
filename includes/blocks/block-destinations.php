@@ -6,14 +6,17 @@
                     while(have_rows('destinations')): the_row();
                         $destination = get_sub_field('destination');
 
+                        if ( ! $destination instanceof WP_Post ) {
+                            continue;
+                        }
             ?>
-                <a href="<?php the_permalink(); ?>" class="adventure--box">
+                <a href="<?php echo esc_url( get_permalink( $destination->ID ) ); ?>" class="adventure--box">
                     <?php echo wp_get_attachment_image(get_post_thumbnail_id($destination->ID), 'full'); ?>
                     <div class="title">
                         <span></span>
-                        <h5 class="box-title"><?php echo $destination->post_title; ?></h5>
+                        <h5 class="box-title"><?php echo esc_html( $destination->post_title ); ?></h5>
                     </div>
-                    <p><?php echo get_the_excerpt($destination->ID); ?></p>
+                    <p><?php echo wp_kses_post( get_the_excerpt( $destination->ID ) ); ?></p>
                 </a>
             <?php
                 wp_reset_postdata();
