@@ -1,11 +1,5 @@
 <div class="container">
     <div style="width: 100%;">
-    <?php
-   
-    $custom_code = get_field('custom_code'); // Use your field name here
-
-   
-    echo $custom_code;
-    ?>
+        <?php echo wp_kses_post( get_field( 'custom_code' ) ); ?>
     </div>
 </div>

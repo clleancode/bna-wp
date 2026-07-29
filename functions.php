@@ -27,6 +27,32 @@
 
 	add_action( 'after_setup_theme', 'balkan_nature_adventure_setup' );
 
+/**
+ * Sanitize embed markup while allowing safe iframe attributes.
+ *
+ * @param string $html Embed markup.
+ * @return string
+ */
+function bna_kses_embed( $html ) {
+	$allowed_html = wp_kses_allowed_html( 'post' );
+
+	$allowed_html['iframe'] = array(
+		'allow'           => true,
+		'allowfullscreen' => true,
+		'class'           => true,
+		'frameborder'     => true,
+		'height'          => true,
+		'loading'         => true,
+		'referrerpolicy'  => true,
+		'sandbox'         => true,
+		'src'             => true,
+		'title'           => true,
+		'width'           => true,
+	);
+
+	return wp_kses( (string) $html, $allowed_html );
+}
+
 	/**
 	* Enqueue scripts and styles -- enqueue scripts later (footer)
 	*
