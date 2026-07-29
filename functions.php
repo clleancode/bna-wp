@@ -1493,15 +1493,6 @@ add_action('template_redirect', function () {
 }, 0);
 
 
-function move_jquery_to_footer() {
-    if (!is_admin()) {
-        wp_deregister_script('jquery');
-        wp_register_script('jquery', includes_url('/js/jquery/jquery.min.js'), false, null, true);
-        wp_enqueue_script('jquery');
-    }
-}
-add_action('wp_enqueue_scripts', 'move_jquery_to_footer');
-
 function remove_noindex_for_pagination() {
     if ( is_paged() ) {
         remove_action( 'wp_head', 'wp_no_robots' );
