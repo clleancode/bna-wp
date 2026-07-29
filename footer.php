@@ -8,7 +8,7 @@
                        
                     ?>
                         <?php if( $link && $image ): ?>
-                            <a href="<?php echo esc_url($link); ?>" target="_blank" >
+                            <a href="<?php echo esc_url($link); ?>" target="_blank" rel="noopener noreferrer">
                                 <img src="<?php echo esc_url($image[0]); ?>" alt="certificates" width="150" height="55">
                             </a>
                         <?php endif; ?>
@@ -35,7 +35,7 @@
                         <?php
                             if(get_field('facebook_url', 'options')):
                         ?>	
-                            <a href="<?php the_field('facebook_url', 'options'); ?>" target="_blank" rel="noopener" aria-label="Facebook Link"><span class="icon-social-facebook"></span></a>
+                            <a href="<?php the_field('facebook_url', 'options'); ?>" target="_blank" rel="noopener noreferrer" aria-label="Facebook Link"><span class="icon-social-facebook"></span></a>
                             
                         <?php
                             endif;
@@ -43,7 +43,7 @@
                             if(get_field('twitter_url', 'options')):
                         ?>
     
-                            <a href="<?php the_field('twitter_url', 'options'); ?>" target="_blank" rel="noopener" aria-label="Twitter Link"><span class="icon-twitter"></span></a>
+                            <a href="<?php the_field('twitter_url', 'options'); ?>" target="_blank" rel="noopener noreferrer" aria-label="Twitter Link"><span class="icon-twitter"></span></a>
                             
                         <?php
                             endif;
@@ -51,13 +51,13 @@
                             if(get_field('instagram_url', 'options')):
                         ?>
     
-                            <a href="<?php the_field('instagram_url', 'options'); ?>" target="_blank" rel="noopener" aria-label="Instagram Link"><span class="icon-instagram"></span></a>
+                            <a href="<?php the_field('instagram_url', 'options'); ?>" target="_blank" rel="noopener noreferrer" aria-label="Instagram Link"><span class="icon-instagram"></span></a>
                             
                         <?php
                             endif;
                             if(get_field('linkedin_url', 'options')):
                         ?>
-                            <a href="<?php the_field('linkedin_url', 'options'); ?>" target="_blank" rel="noopener" aria-label="Linkedin Link"><span class="icon-linkedin2"></span></a>
+                            <a href="<?php the_field('linkedin_url', 'options'); ?>" target="_blank" rel="noopener noreferrer" aria-label="Linkedin Link"><span class="icon-linkedin2"></span></a>
                             
                         <?php
                             endif;
@@ -112,32 +112,6 @@
             </div>
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const chatBtn = document.querySelector('.chat-button');
-            const chatBox = document.getElementById('chatBox');
-            const closeBtn = document.getElementById('chatCloseBtn');
-
-            chatBtn.addEventListener('click', function() {
-                chatBox.classList.add('active');
-            });
-
-            closeBtn.addEventListener('click', function(e) {
-                chatBox.classList.remove('active');
-            });
-
-            // Optional: Close chat-box when clicking outside
-            document.addEventListener('click', function(e) {
-                if (chatBox.classList.contains('active')) {
-                    if (!chatBox.contains(e.target) && !chatBtn.contains(e.target)) {
-                        chatBox.classList.remove('active');
-                    }
-                }
-            });
-        });
-    </script>
-
 
     <?php wp_footer(); ?>
 

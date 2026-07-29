@@ -22,19 +22,6 @@
             $(this).css({transition: "all .3s ease-in-out"});
         });
 
-        // // ===== Home Slider (Swiper) =====
-        // if ($(".myHeader").length) {
-        //     var swiper = new Swiper(".myHeader", {
-        //         effect: "fade",
-        //         speed: 800,
-        //         loop: true,
-        //         navigation: {
-        //             nextEl: ".swiper-button-next",
-        //             prevEl: ".swiper-button-prev",
-        //         }
-        //     });
-        // }
-
         // ===== Search Overlay =====
         $(".search-box--inner").on("click", function(){	
             $("#searchOverlay").fadeIn(200);
@@ -100,17 +87,56 @@
         }
     });
 
-})(jQuery); 
+})(jQuery);
 
 
 function setContactFormPageUrl(form) {
+    if (!form || !form.querySelectorAll) {
+        return;
+    }
+
     form.querySelectorAll('input[name="page-url"]').forEach(function (field) {
         field.value = window.location.href;
     });
 }
 
-document.addEventListener('DOMContentLoaded', function () {
+function bnaInitChatWidget() {
+    var chatBtn = document.querySelector('.chat-button');
+    var chatBox = document.getElementById('chatBox');
+    var closeBtn = document.getElementById('chatCloseBtn');
+
+    if (!chatBtn || !chatBox || !closeBtn) {
+        return;
+    }
+
+    chatBtn.addEventListener('click', function () {
+        chatBox.classList.add('active');
+    });
+
+    closeBtn.addEventListener('click', function () {
+        chatBox.classList.remove('active');
+    });
+
+    document.addEventListener('click', function (e) {
+        if (chatBox.classList.contains('active')) {
+            if (!chatBox.contains(e.target) && !chatBtn.contains(e.target)) {
+                chatBox.classList.remove('active');
+            }
+        }
+    });
+}
+
+function bnaOnReady(fn) {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', fn);
+    } else {
+        fn();
+    }
+}
+
+bnaOnReady(function () {
     setContactFormPageUrl(document);
+    bnaInitChatWidget();
 });
 
 document.addEventListener('submit', function (event) {
