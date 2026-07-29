@@ -908,20 +908,13 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 	add_filter( 'script_loader_tag', function ( $tag, $handle ) {
 		if ( is_admin() ) return $tag;
 
-		$delay = array( 'swiper', 'bundle-js', 'fancybox', 'main-js' );
+		$deferred_scripts = array( 'swiper', 'bundle-js', 'fancybox', 'main-js' );
 
-		if ( ! in_array( $handle, $delay, true ) ) return $tag;
+		if ( ! in_array( $handle, $deferred_scripts, true ) ) return $tag;
 
-		if ( ! preg_match( '/src=["\']([^"\']+)["\']/', $tag, $matches ) ) return $tag;
-		$src = $matches[1];
-		$timeout = ( $handle === 'swiper' ) ? 2000 : 3000;
+		if ( false !== strpos( $tag, ' defer' ) ) return $tag;
 
-		return '<script>setTimeout(function(){' .
-			'var s=document.createElement("script");' .
-			's.src="' . esc_js( $src ) . '";' .
-			's.defer=true;' .
-			'document.body.appendChild(s);' .
-			'},' . $timeout . ');</script>' . "\n";
+		return str_replace( '<script ', '<script defer ', $tag );
 	}, 10, 2 );
 
 
