@@ -779,14 +779,17 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 	}
 	add_filter('nav_menu_css_class', 'add_additional_class_on_li', 1, 3);
 
-	function custom_search_filter($query) {
-		if ($query->is_search) {
-			$query->set( 'post_type', array( 'post', 'destination', 'galleries', 'page', 'attachment', 'video') );
-			$query->set('search_title', true);
+	function custom_search_filter( $query ) {
+		if ( is_admin() || ! $query->is_main_query() || ! $query->is_search() ) {
+			return $query;
 		}
+
+		$query->set( 'post_type', array( 'post', 'destination', 'galleries', 'page', 'video' ) );
+		$query->set( 'search_title', true );
+
 		return $query;
 	}
-	add_filter('pre_get_posts', 'custom_search_filter');
+	add_filter( 'pre_get_posts', 'custom_search_filter' );
 
 	add_post_type_support( 'page', 'excerpt' );
 
