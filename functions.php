@@ -1146,17 +1146,25 @@ function bna_ensure_content_images_have_alt( $content ) {
 add_filter( 'the_content', 'bna_ensure_content_images_have_alt', 20 );
 
 function bna_add_sr_only_h1() {
-    if ( is_singular() || is_front_page() || is_page() ) {
-        global $post;
-        $content = $post->post_content;
+	if ( ! ( is_singular() || is_front_page() || is_page() ) ) {
+		return;
+	}
 
-        if ( stripos( $content, '<h1' ) === false ) {
-            $title = get_the_title( $post->ID );
-            echo '<h1 class="sr-only">' . esc_html( $title ) . '</h1>';
-        }
-    }
+	global $post;
+	if ( ! $post instanceof WP_Post ) {
+		return;
+	}
+
+	if ( stripos( (string) $post->post_content, '<h1' ) !== false ) {
+		return;
+	}
+
+	printf(
+		'<h1 class="sr-only">%s</h1>' . "\n",
+		esc_html( get_the_title( $post ) )
+	);
 }
-add_action( 'wp_head', 'bna_add_sr_only_h1' );
+add_action( 'wp_body_open', 'bna_add_sr_only_h1' );
 
 // add_action('template_redirect', function () {
 //     ob_start(function ($html) {
