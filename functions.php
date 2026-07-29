@@ -117,15 +117,6 @@ function balkan_nature_adventure_scripts() {
          filemtime($theme_dir . '/js/bundle.js'),
          true
      );
-
-	wp_localize_script(
-		'main-js',
-		'specialObj',
-		array(
-			'ajaxurl'  => admin_url( 'admin-ajax.php' ),
-			'security' => wp_create_nonce( 'load_posts' ),
-		)
-	);
 }
 add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 
