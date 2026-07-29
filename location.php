@@ -72,9 +72,7 @@
             <div class="service--box-top">
                 <img src="../img/pics/naturee.jpg" alt="">
                 <div class="overlay">
-                    <a href="#">
-                         <span class="icon-up-right"></span>
-                    </a>
+                    <span class="icon-up-right" aria-hidden="true"></span>
                 </div>
             </div>
             <div class="service--box-bottom">
@@ -94,9 +92,7 @@
             <div class="service--box-top">
                 <img src="../img/pics/naturee.jpg" alt="">
                 <div class="overlay">
-                    <a href="#">
-                         <span class="icon-up-right"></span>
-                    </a>
+                    <span class="icon-up-right" aria-hidden="true"></span>
                 </div>
             </div>
             <div class="service--box-bottom">
@@ -116,9 +112,7 @@
             <div class="service--box-top">
                 <img src="../img/pics/naturee.jpg" alt="">
                 <div class="overlay">
-                    <a href="#">
-                         <span class="icon-up-right"></span>
-                    </a>
+                    <span class="icon-up-right" aria-hidden="true"></span>
                 </div>
             </div>
             <div class="service--box-bottom">
