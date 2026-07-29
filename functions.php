@@ -27,34 +27,6 @@
 
 	add_action( 'after_setup_theme', 'balkan_nature_adventure_setup' );
 
-	/**
-	* Enqueue scripts and styles -- enqueue scripts later (footer)
-	*
-	* Add versioning and enable efficient browser cache for static resources.
-	*/
-
-	// Set efficient browser cache lifetimes for static resources (images, CSS, JS, fonts)
-	// function bnadventure_set_assets_cache_headers( $headers ) {
-	// 	// Do not break admin
-	// 	if ( is_admin() ) return $headers;
-	// 	if ( isset( $_SERVER['REQUEST_URI'] ) ) {
-	// 		$static_extensions = array('jpg', 'jpeg', 'png', 'svg', 'gif', 'webp', 'woff2', 'woff', 'ttf', 'eot');
-	// 		$path = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH );
-	// 		$ext  = strtolower( pathinfo( $path, PATHINFO_EXTENSION ) );
-	// 		if ( in_array( $ext, $static_extensions ) ) {
-	// 			$headers['Cache-Control'] = 'public, max-age=31536000, immutable'; // 1 year
-	// 		}
-	// 	}
-	// 	return $headers;
-	// }
-	// add_filter( 'wp_headers', 'bnadventure_set_assets_cache_headers', 15 );
-
-// 	add_action('wp_head', function() {
-//     $theme_dir     = get_template_directory();
-//     $theme_dir_uri = get_template_directory_uri();
-//     $ver = file_exists($theme_dir . '/css/style.css') ? filemtime($theme_dir . '/css/style.css') : '1';
-//     echo '<link rel="preload" href="' . $theme_dir_uri . '/css/style.css?ver=' . $ver . '" as="style" crossorigin>';
-// }, 1);
 
 function balkan_nature_adventure_scripts() {
 	$theme_dir     = get_template_directory();
