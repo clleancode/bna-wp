@@ -1536,11 +1536,6 @@ add_action('template_redirect', function() {
     }
 });
 
-add_action('wp_head', function() {
-    if (is_front_page()) {
-        echo '<link rel="preload" as="image" href="https://bnadventure.com/wp-content/uploads/2026/05/BNA_2173-e1601378743829-1024x741-1-1-768x556.webp" fetchpriority="high">';
-    }
-}, 1);
 
 
 add_filter('jpeg_quality', fn($q) => 65);
