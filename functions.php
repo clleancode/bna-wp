@@ -13,13 +13,15 @@
 
 	if (!function_exists('balkan_nature_adventure_setup')) :
 		function balkan_nature_adventure_setup() {
+			load_theme_textdomain( 'balkan-nature-adventure', get_template_directory() . '/languages' );
+
 			add_theme_support( 'title-tag' );
 			add_theme_support( 'post-thumbnails' );
 
 			register_nav_menus(
 				array(
-					'primary'=> __('Primary Menu'),
-					'mobile'=> __('Mobile Menu')
+					'primary'=> __( 'Primary Menu', 'balkan-nature-adventure' ),
+					'mobile'=> __( 'Mobile Menu', 'balkan-nature-adventure' )
 				)
 			);
 		}
@@ -138,7 +140,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			'page_title' 	=> 'Theme General Settings',
 			'menu_title'	=> 'Theme Settings',
 			'menu_slug' 	=> 'theme-general-settings',
-			'capability'	=> 'edit_posts',
+			'capability'	=> 'manage_options',
 			'redirect'		=> false
 		));
 	}
@@ -152,7 +154,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-home--banner-slider',
 				'title'				=> __('AB Block - Home Banner Slider'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -162,7 +164,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-products',
 				'title'				=> __('AB Block - Products'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -172,7 +174,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-about-us',
 				'title'				=> __('AB Block - About Us'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -182,7 +184,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-video',
 				'title'				=> __('AB Block - Video'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -192,7 +194,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-location',
 				'title'				=> __('AB Block - Location'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -202,7 +204,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-overlay-boxes',
 				'title'				=> __('AB Block - Overlay Boxes'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -212,7 +214,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-why-choose-us',
 				'title'				=> __('AB Block - Why Choose Us'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -222,7 +224,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-green-banner',
 				'title'				=> __('AB Block - Green Banner'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -232,7 +234,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-gallery-images',
 				'title'				=> __('AB Block - Gallery Images'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -242,7 +244,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-testimonial',
 				'title'				=> __('AB Block - Testimonial'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -252,7 +254,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-banner',
 				'title'				=> __('AB Block - Banner'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -262,7 +264,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-about',
 				'title'				=> __('AB Block - About'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -272,7 +274,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-partners',
 				'title'				=> __('AB Block - Partners'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -282,7 +284,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-who-we-are',
 				'title'				=> __('AB Block - Who We Are'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -292,7 +294,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-tab-with-accordion',
 				'title'				=> __('AB Block - Tab With Accordion'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -302,7 +304,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-discover-more',
 				'title'				=> __('AB Block - Discover More'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -312,7 +314,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-contact',
 				'title'				=> __('AB Block - Contact'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -322,7 +324,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-content',
 				'title'				=> __('AB Block - Content'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -332,7 +334,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-cities-content',
 				'title'				=> __('AB Block - Cities Content'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -342,7 +344,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-cities-content--reverse',
 				'title'				=> __('AB Block - Cities Content Reverse'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -352,7 +354,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-documents',
 				'title'				=> __('AB Block - Documents'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -362,7 +364,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-about-location',
 				'title'				=> __('AB Block - About Location'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -372,7 +374,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-destination-kosove',
 				'title'				=> __('AB Block - Destination Kosove'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -382,7 +384,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-destination-albania',
 				'title'				=> __('AB Block - Destination Albania'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -392,7 +394,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-destination-montenegro',
 				'title'				=> __('AB Block - Destination Montenegro'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -402,7 +404,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-content-with-image',
 				'title'				=> __('AB Block - Content With Image'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -412,7 +414,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-slider',
 				'title'				=> __('AB Block - Slider'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -422,7 +424,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-accordion',
 				'title'				=> __('AB Block - Accordion'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -442,7 +444,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-iframe-map',
 				'title'				=> __('AB Block - Iframe Map'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -452,7 +454,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-iframe-video',
 				'title'				=> __('AB Block - Iframe Video'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -462,7 +464,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-blog',
 				'title'				=> __('AB Block - Blog'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -472,7 +474,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-news',
 				'title'				=> __('AB Block - News'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -482,7 +484,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-gallery',
 				'title'				=> __('AB Block - Gallery'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -492,7 +494,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-single-gallery',
 				'title'				=> __('AB Block - Single Gallery'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -502,7 +504,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-team',
 				'title'				=> __('AB Block - Team'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -512,7 +514,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-header-slider',
 				'title'				=> __('AB Block - Header Slider'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -522,7 +524,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-slider-with-title',
 				'title'				=> __('AB Block - Slider With Title'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -532,7 +534,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-location-testimonial',
 				'title'				=> __('AB Block - Location Testimonial'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -541,7 +543,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-share-item',
 				'title'				=> __('AB Block - Share Item'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -551,7 +553,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-trip-advisor',
 				'title'				=> __('AB Block - Trip Advisor'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -561,7 +563,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-shortcode',
 				'title'				=> __('AB Block - Shortcode'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -571,7 +573,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block--iframe-tripadvisort',
 				'title'				=> __('AB Block - Iframe Tripadvisort'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -581,7 +583,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 			acf_register_block(array(
 				'name'				=> 'block-custom-code',
 				'title'				=> __('AB Block - Custom Code'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
