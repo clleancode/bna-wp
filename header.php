@@ -34,6 +34,7 @@
 </head>
 
 <body <?php body_class(); ?>>
+<?php wp_body_open(); ?>
     <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WFWLS66"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
