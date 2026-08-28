@@ -106,7 +106,7 @@ function balkan_nature_adventure_scripts() {
 		'main-js',
 		$theme_dir_uri . '/js/script.js',
 		array( 'jquery' ),
-		file_exists( $theme_dir . '/js/script.js' ) ? filemtime( $theme_dir . '/js/script.js' ) : null,
+		file_exists( $theme_dir . '/js/script.js' ) ? filemtime( $theme_dir . '/js/script.js' ) : '1.0',
 		true
 	);
 
@@ -1633,6 +1633,191 @@ add_action( 'wp_head', function () {
 }, 1 );
 
 
+function BNA_configure_smtp( $phpmailer ) {
+	if ( ! defined( 'BNA_SMTP_HOST' ) || ! defined( 'BNA_SMTP_USERNAME' ) || ! defined( 'BNA_SMTP_PASSWORD' ) ) {
+		return;
+	}
+
+	$encryption = defined( 'BNA_SMTP_ENCRYPTION' ) ? strtolower( BNA_SMTP_ENCRYPTION ) : 'tls';
+	$encryption = in_array( $encryption, array( 'tls', 'ssl' ), true ) ? $encryption : '';
+
+	$phpmailer->isSMTP();
+	$phpmailer->Host       = BNA_SMTP_HOST;
+	$phpmailer->Port       = defined( 'BNA_SMTP_PORT' ) ? (int) BNA_SMTP_PORT : 587;
+	$phpmailer->SMTPAuth   = true;
+	$phpmailer->Username   = BNA_SMTP_USERNAME;
+	$phpmailer->Password   = BNA_SMTP_PASSWORD;
+	$phpmailer->SMTPSecure = $encryption;
+	$phpmailer->SMTPAutoTLS = ( 'ssl' !== $encryption );
+
+	$from_email = defined( 'BNA_SMTP_FROM_EMAIL' ) ? BNA_SMTP_FROM_EMAIL : BNA_SMTP_USERNAME;
+	$from_name  = defined( 'BNA_SMTP_FROM_NAME' ) ? BNA_SMTP_FROM_NAME : get_bloginfo( 'name' );
+
+	if ( is_email( $from_email ) ) {
+		$phpmailer->setFrom( $from_email, $from_name, false );
+	}
+}
+add_action( 'phpmailer_init', 'BNA_configure_smtp' );
+
+
+function BNA_log_mail_failure( $error ) {
+	$message = $error->get_error_message();
+
+	error_log( 'POB SMTP error: ' . $message );
+	update_option(
+		'BNA_last_smtp_error',
+		array(
+			'message' => $message,
+			'time'    => current_time( 'mysql' ),
+		),
+		false
+	);
+}
+add_action( 'wp_mail_failed', 'BNA_log_mail_failure' );
+
+/**
+ * Clear the stored error after a successful email.
+ */
+function BNA_clear_mail_failure() {
+	delete_option( 'BNA_last_smtp_error' );
+}
+add_action( 'wp_mail_succeeded', 'BNA_clear_mail_failure' );
+
+/**
+ * Show the latest SMTP error only to administrators.
+ */
+function BNA_smtp_admin_notice() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	$error = get_option( 'BNA_last_smtp_error' );
+
+	if ( empty( $error['message'] ) ) {
+		return;
+	}
+	?>
+	<div class="notice notice-error">
+		<p>
+			<strong><?php esc_html_e( 'Last SMTP error:', 'peaks-of-the-balkans' ); ?></strong>
+			<?php echo esc_html( $error['message'] ); ?>
+			<?php if ( ! empty( $error['time'] ) ) : ?>
+				<small>(<?php echo esc_html( $error['time'] ); ?>)</small>
+			<?php endif; ?>
+		</p>
+	</div>
+	<?php
+}
+add_action( 'admin_notices', 'BNA_smtp_admin_notice' );
+
+/**
+ * Return the address that receives website contact messages.
+ */
+function BNA_get_contact_email() {
+	$email = defined( 'BNA_CONTACT_EMAIL' ) ? BNA_CONTACT_EMAIL : 'info@bnadventure.com';
+
+	return is_email( $email ) ? $email : get_option( 'admin_email' );
+}
+
+/**
+ * Redirect back to the contact form with its delivery status.
+ */
+function BNA_contact_redirect( $status ) {
+	$fallback = home_url( '/contact/' );
+	$redirect = wp_get_referer();
+	$redirect = $redirect ? $redirect : $fallback;
+	$redirect = remove_query_arg( 'contact-status', $redirect );
+
+	wp_safe_redirect( add_query_arg( 'contact-status', sanitize_key( $status ), $redirect ) . '#contact-form' );
+	exit;
+}
+
+/**
+ * Process the public contact form and send it through wp_mail().
+ */
+function BNA_handle_contact_form() {
+	if (
+		! isset( $_POST['BNA_contact_nonce'] ) ||
+		! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['BNA_contact_nonce'] ) ), 'BNA_send_contact' )
+	) {
+		BNA_contact_redirect( 'invalid' );
+	}
+
+	// Bots commonly fill fields hidden from visitors.
+	if ( ! empty( $_POST['website'] ) ) {
+		BNA_contact_redirect( 'success' );
+	}
+
+	$name    = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
+	$surname = isset( $_POST['surname'] ) ? sanitize_text_field( wp_unslash( $_POST['surname'] ) ) : '';
+	$email   = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
+	$message = isset( $_POST['message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['message'] ) ) : '';
+
+	if ( '' === $name || '' === $surname || ! is_email( $email ) || '' === $message ) {
+		BNA_contact_redirect( 'invalid' );
+	}
+
+	$subject = sprintf(
+		/* translators: %s: contact's full name. */
+		__( 'Website enquiry from %s', 'peaks-of-the-balkans' ),
+		$name . ' ' . $surname
+	);
+	$body = sprintf(
+		"Name: %s %s\nEmail: %s\nPage: %s\n\nMessage:\n%s",
+		$name,
+		$surname,
+		$email,
+		esc_url_raw( wp_get_referer() ),
+		$message
+	);
+	$headers = array( 'Reply-To: ' . $name . ' ' . $surname . ' <' . $email . '>' );
+
+	$sent = wp_mail( BNA_get_contact_email(), $subject, $body, $headers );
+	BNA_contact_redirect( $sent ? 'success' : 'failed' );
+}
+add_action( 'admin_post_nopriv_BNA_send_contact', 'BNA_handle_contact_form' );
+add_action( 'admin_post_BNA_send_contact', 'BNA_handle_contact_form' );
+
+/**
+ * Render contact form feedback after a redirect.
+ */
+function BNA_contact_form_notice() {
+	$status = isset( $_GET['contact-status'] ) ? sanitize_key( wp_unslash( $_GET['contact-status'] ) ) : '';
+
+	if ( 'success' === $status ) {
+		return '<div class="pob-contact-form__notice pob-contact-form__notice--success" role="status">' .
+			esc_html__( 'Thank you. Your message has been sent successfully.', 'peaks-of-the-balkans' ) .
+			'</div>';
+	}
+
+	if ( 'failed' === $status ) {
+		return '<div class="pob-contact-form__notice pob-contact-form__notice--error" role="alert">' .
+			esc_html__( 'We could not send your message. Please try again or contact us by email.', 'peaks-of-the-balkans' ) .
+			'</div>';
+	}
+
+	if ( 'invalid' === $status ) {
+		return '<div class="pob-contact-form__notice pob-contact-form__notice--error" role="alert">' .
+			esc_html__( 'Please check all required fields and try again.', 'peaks-of-the-balkans' ) .
+			'</div>';
+	}
+
+	return '';
+}
+
+/**
+ * Send the footer Contact Form 7 "Chat" submissions to the SMTP inbox.
+ */
+function BNA_route_chat_form_email( $components, $contact_form ) {
+	if ( 'Chat' === $contact_form->title() ) {
+		$components['recipient'] = BNA_get_contact_email();
+	}
+
+	return $components;
+}
+add_filter( 'wpcf7_mail_components', 'BNA_route_chat_form_email', 10, 2 );
+
+
 function dergo_te_dhenat_ne_google_sheets($contact_form) {
 
     if ((int) $contact_form->id() !== 7071) {
@@ -1682,7 +1867,7 @@ function dergo_te_dhenat_ne_google_sheets($contact_form) {
         }
     }
 
-	$script_url = 'https://script.google.com/macros/s/AKfycbyJLOMCtwn3DEAsM09Ze7FPYGzT3rJtQClu4j4s91gxyWmLEZCeaeGYqindovHhf5eM/exec';
+    $script_url = 'https://script.google.com/macros/s/AKfycbyJLOMCtwn3DEAsM09Ze7FPYGzT3rJtQClu4j4s91gxyWmLEZCeaeGYqindovHhf5eM/exec';
 
     $body = [
         'Website' => $page_url,
