@@ -20,7 +20,7 @@
         ?>
             <div class="gallery-boxes--inner">
                 <a href="<?php the_permalink(); ?>" class="gallery-box">
-                    <?php echo wp_get_attachment_image($thumbnail_id, 'full', false, array('alt' => '') ); ?> 
+                    <?php echo wp_get_attachment_image( $thumbnail_id, 'full' ); ?> 
                     <div class="gallery-box-content">
                         <h3><?php the_title(); ?></h3>
                         <div class="content--subtitle">
@@ -38,7 +38,13 @@
         ?>
     </div>
     <div class="gallery-btn">
-        <a class="btn" href="<?php echo get_permalink(1604); ?>">More Galleries  <span class="icon-angle-double-down"></span></a>
+        <?php
+        $galleries_page = get_page_by_path( 'gallery' );
+        $galleries_url  = $galleries_page
+            ? get_permalink( $galleries_page )
+            : get_post_type_archive_link( 'galleries' );
+        ?>
+        <a class="btn" href="<?php echo esc_url( $galleries_url ); ?>">More Galleries  <span class="icon-angle-double-down"></span></a>
     </div>
 </div>
 
