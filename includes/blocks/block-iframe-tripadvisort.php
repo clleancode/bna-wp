@@ -1,3 +1,3 @@
 <div class="trip-advisor container">
-    <?php the_field('iframe_tripadvisort'); ?>
+    <?php echo bna_kses_embed( get_field( 'iframe_tripadvisort' ) ); ?>
 </div>

@@ -39,7 +39,10 @@
             if ($cpt_query->have_posts()) : while ($cpt_query->have_posts()) : $cpt_query->the_post();
         ?>
             <div class="gallery-box">
-                <img src="<?php the_post_thumbnail_url(); ?>" alt="">
+                <?php
+                    $thumbnail_id = get_post_thumbnail_id( get_the_ID() );
+                    echo wp_get_attachment_image( $thumbnail_id, 'full' );
+                ?>
                 <a class="about-gallery" href="<?php echo esc_url(get_the_permalink()); ?>">
                     <h4><?php the_title(); ?></h4>
                 </a>

@@ -7,7 +7,7 @@
 ?>
 
 <div class="search-results container">
-     <h1 class="search-title"><?php printf( esc_html__( 'Search Results for: %s', 'your-theme-textdomain' ), '<span>' . get_search_query() . '</span>' ); ?></h1>
+     <h1 class="search-title"><?php printf( esc_html__( 'Search Results for: %s', 'balkan-nature-adventure' ), '<span>' . get_search_query() . '</span>' ); ?></h1>
         <?php if ( have_posts() ) : ?>
             <?php while ( have_posts() ) : the_post(); ?>
                 <div class="post">
@@ -26,8 +26,6 @@
                 </div>
             <?php endwhile; ?>
             <?php the_posts_navigation(); ?>
-        <?php else : ?>
-            <?php get_template_part( 'template-parts/content', 'none' ); ?>
         <?php endif; ?>
 </div>
 ​
