@@ -694,7 +694,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 		}
 	
 		// Verify nonce
-		if ( ! wp_verify_nonce( $_POST['product_category_nonce'], basename( __FILE__ ) ) ) {
+		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['product_category_nonce'] ) ), basename( __FILE__ ) ) ) {
 			return;
 		}
 	
