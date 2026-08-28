@@ -52,6 +52,33 @@
 
 	add_action( 'after_setup_theme', 'balkan_nature_adventure_setup' );
 
+	
+	/**
+ * Sanitize embed markup while allowing safe iframe attributes.
+ *
+ * @param string $html Embed markup.
+ * @return string
+ */
+function bna_kses_embed( $html ) {
+	$allowed_html = wp_kses_allowed_html( 'post' );
+
+	$allowed_html['iframe'] = array(
+		'allow'           => true,
+		'allowfullscreen' => true,
+		'class'           => true,
+		'frameborder'     => true,
+		'height'          => true,
+		'loading'         => true,
+		'referrerpolicy'  => true,
+		'sandbox'         => true,
+		'src'             => true,
+		'title'           => true,
+		'width'           => true,
+	);
+
+	return wp_kses( (string) $html, $allowed_html );
+}
+
 
 function balkan_nature_adventure_scripts() {
 	$theme_dir     = get_template_directory();
@@ -114,6 +141,7 @@ function balkan_nature_adventure_scripts() {
          filemtime($theme_dir . '/js/bundle.js'),
          true
      );
+
 }
 add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 
@@ -135,7 +163,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 	 * Register ACF Blocks
 	 */
 
-	function acf_content_block() {
+	 function acf_content_block() {
 		if( function_exists('acf_register_block_type') ) {
 			acf_register_block_type(array(
 				'name'				=> 'block-home--banner-slider',
@@ -682,8 +710,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 		}
 	
 		// Verify nonce
-		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['product_category_nonce'] ) ), basename( __FILE__ ) ) ) {
-			return;
+		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['product_category_nonce'] ) ), basename( __FILE__ ) ) ) {			return;
 		}
 	
 		// Check if the user has permissions to save data
@@ -1521,6 +1548,7 @@ add_action('template_redirect', function() {
         exit;
     }
 });
+
 
 
 

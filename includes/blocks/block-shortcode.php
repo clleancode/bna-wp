@@ -1,3 +1,3 @@
 <div class="html container">
-    <?php the_field('html_code'); ?>
+    <?php echo wp_kses_post( get_field( 'html_code' ) ); ?>
 </div>
