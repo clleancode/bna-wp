@@ -55,17 +55,27 @@
         <div class="blog-category">
             <h5>Category</h5>
             <?php 
-                $args = array(
-                    'taxonomy'        => 'category',
-                    'orderby'         => 'name',  
-                    'order'           => 'ASC',
-                    'include'         => array( 
-                        get_term_by('slug', 'other-news-from-the-region', 'category')->term_id,
-                        get_term_by('slug', 'peaks-of-the-balkans-blog', 'category')->term_id
-                    ),
-                    'post__not_in'    => array($category->cat_ID),  
-                );
-                $categories = get_categories($args);
+                $category_include_ids = array();
+                foreach ( array( 'other-news-from-the-region', 'peaks-of-the-balkans-blog' ) as $category_slug ) {
+                    $category_term = get_term_by( 'slug', $category_slug, 'category' );
+
+                    if ( $category_term && ! is_wp_error( $category_term ) ) {
+                        $category_include_ids[] = (int) $category_term->term_id;
+                    }
+                }
+
+                $categories = array();
+
+                if ( ! empty( $category_include_ids ) ) {
+                    $args = array(
+                        'taxonomy'        => 'category',
+                        'orderby'         => 'name',  
+                        'order'           => 'ASC',
+                        'include'         => $category_include_ids,
+                        'post__not_in'    => array($category->cat_ID),  
+                    );
+                    $categories = get_categories($args);
+                }
                 if ($categories):
             ?>                         
                 <ul>
@@ -117,14 +127,29 @@
 
 <nav class= "pagination">             
    <?php
-      echo paginate_links( array(
+      $pagination_links = paginate_links( array(
           'format'  => 'page/%#%',
           'current' => $paged,
           'total'   => $cpt_query->max_num_pages,
           'mid_size'        => 2,
           'prev_text'       => __('<'),
-          'next_text'       => __('>')
+          'next_text'       => __('>'),
+          'type'            => 'array',
        ) );
+
+      if ( $pagination_links ) {
+          foreach ( $pagination_links as $pagination_link ) {
+              if ( strpos( $pagination_link, 'aria-current="page"' ) !== false ) {
+                  $pagination_link = sprintf(
+                      '<a aria-current="page" class="page-numbers current" href="%s">%s</a>',
+                      esc_url( get_pagenum_link( $paged ) ),
+                      esc_html( $paged )
+                  );
+              }
+
+              echo $pagination_link;
+          }
+      }
     ?>
 </nav>
 
