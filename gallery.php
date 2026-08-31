@@ -55,16 +55,31 @@
             endif;
         ?>
     </div>
-	<nav class= "pagination">             
+	<nav class= "pagination">
         <?php
-             echo paginate_links( array(
+             $pagination_links = paginate_links( array(
                  'format'  => 'page/%#%',
                  'current' => $paged,
                  'total'   => $cpt_query->max_num_pages,
                  'mid_size'        => 2,
                  'prev_text'       => __('<'),
-                 'next_text'       => __('>')
+                 'next_text'       => __('>'),
+                 'type'            => 'array',
               ) );
+
+             if ( $pagination_links ) {
+                 foreach ( $pagination_links as $pagination_link ) {
+                     if ( strpos( $pagination_link, 'aria-current="page"' ) !== false ) {
+                         $pagination_link = sprintf(
+                             '<a aria-current="page" class="page-numbers current" href="%s">%s</a>',
+                             esc_url( get_pagenum_link( $paged ) ),
+                             esc_html( $paged )
+                         );
+                     }
+
+                     echo $pagination_link;
+                 }
+             }
         ?>
     </nav>
 </div>
