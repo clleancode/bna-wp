@@ -1240,7 +1240,7 @@ function bna_add_sr_only_h1() {
 	}
 
 	printf(
-		'<h1 class="sr-only">%s</h1>' . "\n",
+		'<h2 class="sr-only">%s</h2>' . "\n",
 		esc_html( get_the_title( $post ) )
 	);
 }
