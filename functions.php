@@ -1470,7 +1470,7 @@ add_action('init', function () {
 
 function bna_fix_redirect_chains() {
     $redirects = array(
-        '/destination/peaks-of-the-balkans-trail/'                          => '/peaks-of-the-balkans/',
+        '/destination/peaks-of-the-balkans-trail/'                          => '/peaks-of-the-balkans-eng/',
         '/products/via-ferrata-mat-and-ari/'                                => '/products/onvia-ferrata-mat-en-ari/',
         '/products/guided-high-scardus-2024/'                               => '/products/guided-high-scardus-2026/',
         '/nl/products/via-ferrata-mat-and-ari-2/'                           => '/nl/products/ontdek-via-ferrata-mat-en-ari/',
@@ -1559,10 +1559,12 @@ add_action('template_redirect', function () {
     if (is_admin() || wp_doing_ajax()) return;
 
     $uri = $_SERVER['REQUEST_URI'] ?? '';
+    $path = parse_url( $uri, PHP_URL_PATH );
+    $path = is_string( $path ) ? trailingslashit( $path ) : '';
 
-    if (strpos($uri, '/products/peaks-of-the-balkans-trail/') !== false) {
+    if ( $path === '/products/peaks-of-the-balkans-trail/' ) {
 
-        $target = home_url('/peaks-of-the-balkans/');
+        $target = home_url('/peaks-of-the-balkans-eng/');
 
         if (!defined('DONOTCACHEPAGE')) {
             define('DONOTCACHEPAGE', true);
