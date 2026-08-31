@@ -1559,8 +1559,10 @@ add_action('template_redirect', function () {
     if (is_admin() || wp_doing_ajax()) return;
 
     $uri = $_SERVER['REQUEST_URI'] ?? '';
+    $path = parse_url( $uri, PHP_URL_PATH );
+    $path = is_string( $path ) ? trailingslashit( $path ) : '';
 
-    if (strpos($uri, '/products/peaks-of-the-balkans-trail/') !== false) {
+    if ( $path === '/products/peaks-of-the-balkans-trail/' ) {
 
         $target = home_url('/peaks-of-the-balkans/');
 
