@@ -1225,7 +1225,7 @@ function bna_ensure_content_images_have_alt( $content ) {
 }
 add_filter( 'the_content', 'bna_ensure_content_images_have_alt', 20 );
 
-function bna_add_sr_only_h1() {
+function bna_add_sr_only_h2() {
 	if ( ! ( is_singular() || is_front_page() || is_page() ) ) {
 		return;
 	}
@@ -1244,7 +1244,7 @@ function bna_add_sr_only_h1() {
 		esc_html( get_the_title( $post ) )
 	);
 }
-add_action( 'wp_body_open', 'bna_add_sr_only_h1' );
+add_action( 'wp_body_open', 'bna_add_sr_only_h2' );
 
 // add_action('template_redirect', function () {
 //     ob_start(function ($html) {
@@ -1290,6 +1290,16 @@ function bn_fix_og_image($image) {
         $image
     );
 }
+
+add_filter( 'wpseo_opengraph_url', function ( $url ) {
+	if ( is_paged() && ( is_category() || is_tag() || is_tax() ) ) {
+		$paged = max( 1, (int) get_query_var( 'paged' ) );
+
+		return esc_url( get_pagenum_link( $paged ) );
+	}
+
+	return $url;
+} );
 
 function bna_fix_archive_pagination_query( $query ) {
     if ( is_admin() || ! $query->is_main_query() ) {
