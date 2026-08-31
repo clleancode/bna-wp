@@ -162,6 +162,73 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 	}
 
 	/**
+	 * ACF Local JSON support.
+	 */
+
+	function bna_acf_json_path() {
+		return get_stylesheet_directory() . '/acf-json';
+	}
+
+	function bna_acf_json_save_point( $path ) {
+		$path = bna_acf_json_path();
+
+		if ( ! is_dir( $path ) ) {
+			wp_mkdir_p( $path );
+		}
+
+		return $path;
+	}
+	add_filter( 'acf/settings/save_json', 'bna_acf_json_save_point' );
+
+	function bna_acf_json_load_point( $paths ) {
+		$path = bna_acf_json_path();
+
+		if ( ! in_array( $path, $paths, true ) ) {
+			$paths[] = $path;
+		}
+
+		return $paths;
+	}
+	add_filter( 'acf/settings/load_json', 'bna_acf_json_load_point' );
+
+	/**
+	 * ACF Blocks - Force V3.
+	 */
+	function bna_acf_blocks_default_to_v3( $version, $block ) {
+		return 3;
+	}
+	add_filter( 'acf/blocks/default_block_version', 'bna_acf_blocks_default_to_v3', 10, 2 );
+
+	/**
+	 * ACF Blocks V3 compatibility.
+	 */
+	function bna_acf_register_block_v3_args( $args ) {
+		$args['api_version']       = 3;
+		$args['acf_block_version'] = 3;
+
+		/**
+		 * Hide ACF fields from Gutenberg sidebar.
+		 * Fields will be edited in the Expanded Editor.
+		 */
+		$args['hide_fields_in_sidebar'] = true;
+
+		return $args;
+	}
+	add_filter(
+		'acf/register_block_type_args',
+		'bna_acf_register_block_v3_args',
+		20
+	);
+
+	/**
+	 * Expanded Editor button text.
+	 */
+	function bna_acf_expanded_editor_button_text( $button_text, $block ) {
+		return __( 'Open Expanded Editor', 'balkan-nature-adventure' );
+	}
+	add_filter( 'acf/blocks/default_expanded_editor_button_text', 'bna_acf_expanded_editor_button_text', 10, 2 );
+
+	/**
 	 * Register ACF Blocks
 	 */
 
