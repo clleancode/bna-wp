@@ -1468,6 +1468,41 @@ add_action('init', function () {
 
 }, 0);
 
+function bna_is_nl_peaks_legacy_product_path( $url_or_path = '' ) {
+    $path = parse_url( (string) $url_or_path, PHP_URL_PATH );
+    $path = is_string( $path ) ? trailingslashit( $path ) : '';
+
+    return $path === '/nl/products/peaks-of-the-balkans-trail/';
+}
+
+add_filter( 'request', function ( $query_vars ) {
+    $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+
+    if ( ! bna_is_nl_peaks_legacy_product_path( $request_uri ) ) {
+        return $query_vars;
+    }
+
+    $product = get_page_by_path( 'pics-van-de-balkan-trail', OBJECT, 'destination' );
+
+    if ( ! $product ) {
+        return $query_vars;
+    }
+
+    return array(
+        'post_type' => 'destination',
+        'p'         => $product->ID,
+        'lang'      => 'nl',
+    );
+}, 0 );
+
+add_filter( 'redirect_canonical', function ( $redirect_url, $requested_url ) {
+    if ( is_admin() || ! bna_is_nl_peaks_legacy_product_path( $requested_url ) ) {
+        return $redirect_url;
+    }
+
+    return false;
+}, 0, 2 );
+
 function bna_fix_redirect_chains() {
     $redirects = array(
         '/destination/peaks-of-the-balkans-trail/'                          => '/peaks-of-the-balkans/',
