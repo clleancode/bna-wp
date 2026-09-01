@@ -1682,14 +1682,22 @@ add_action('template_redirect', function () {
             }
             if (!preg_match('/src=["\']([^"\']+)["\']/', $tag, $src)) return $tag;
             $url = $src[1];
-            $id  = attachment_url_to_postid($url);
-            if ($id) {
-                $alt = get_post_meta($id, '_wp_attachment_image_alt', true);
-                if (!$alt) $alt = get_the_title($id);
-            } else {
-                $alt = pathinfo(basename($url), PATHINFO_FILENAME);
-                $alt = str_replace(['-', '_'], ' ', $alt);
+
+            $cache_key = 'bna_img_alt_' . md5($url);
+            $alt = get_transient($cache_key);
+
+            if (false === $alt) {
+                $id = attachment_url_to_postid($url);
+                if ($id) {
+                    $alt = get_post_meta($id, '_wp_attachment_image_alt', true);
+                    if (!$alt) $alt = get_the_title($id);
+                } else {
+                    $alt = pathinfo(basename($url), PATHINFO_FILENAME);
+                    $alt = str_replace(['-', '_'], ' ', $alt);
+                }
+                set_transient($cache_key, $alt, DAY_IN_SECONDS);
             }
+
             $alt = esc_attr($alt);
             if (strpos($tag, 'alt=') !== false) {
                 $tag = preg_replace('/alt=["\'].*?["\']/', 'alt="'.$alt.'"', $tag);
