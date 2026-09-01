@@ -1341,22 +1341,6 @@ add_filter('redirect_canonical', function ($redirect_url, $requested_url) {
 // });
 
 
-add_filter( 'pll_rel_hreflang_attributes', function ( $hreflangs ) {
-	if ( ! is_array( $hreflangs ) ) {
-		return $hreflangs;
-	}
-
-	$hreflangs = bna_normalize_hreflang_attributes( $hreflangs );
-
-	$x_default = bna_get_hreflang_x_default_url( $hreflangs );
-	if ( $x_default ) {
-		$hreflangs['x-default'] = $x_default;
-	}
-
-	return $hreflangs;
-}, 20 );
-
-
 function safe_mobile_image_fix($attr) {
 
     if (wp_is_mobile()) {
@@ -1486,46 +1470,6 @@ function bna_fix_redirect_chains() {
     }
 }
 add_action( 'template_redirect', 'bna_fix_redirect_chains' );
-
-
-add_filter( 'wpseo_hreflang_output', function ( $output ) {
-	$parsed_hreflangs = array();
-
-	if ( preg_match_all( '/<link rel="alternate" href="([^"]+)" hreflang="([a-z]{2}(?:-[A-Za-z]+)?)" \/>/i', $output, $matches, PREG_SET_ORDER ) ) {
-		foreach ( $matches as $match ) {
-			$parsed_hreflangs[ $match[2] ] = $match[1];
-		}
-	}
-
-	$x_default = bna_get_hreflang_x_default_url( $parsed_hreflangs );
-
-	if ( ! $x_default && function_exists( 'pll_current_language' ) ) {
-		$lang = pll_current_language( 'slug' );
-		if ( $lang && ! empty( $parsed_hreflangs[ $lang ] ) ) {
-			$x_default = $parsed_hreflangs[ $lang ];
-		}
-	}
-
-	if ( ! $x_default && ! empty( $parsed_hreflangs['en'] ) ) {
-		$x_default = $parsed_hreflangs['en'];
-	}
-
-	$x_default = bna_normalize_hreflang_permalink( $x_default );
-
-	if ( ! $x_default ) {
-		return $output;
-	}
-
-	$output = preg_replace(
-		'/<link rel="alternate" href="[^"]+" hreflang="x-default"[^>]*\/?>/i',
-		'',
-		$output
-	);
-
-	$output .= "\n" . '<link rel="alternate" href="' . esc_url( $x_default ) . '" hreflang="x-default" />';
-
-	return $output;
-}, 99 );
 
 
 add_action('template_redirect', function () {
@@ -1974,3 +1918,60 @@ function dergo_te_dhenat_ne_google_sheets($contact_form) {
 
 
 add_action('wpcf7_before_send_mail', 'dergo_te_dhenat_ne_google_sheets');
+
+
+function bna_get_universal_home_url() {
+	return trailingslashit( set_url_scheme( get_option( 'home' ) ) );
+}
+
+add_filter( 'pll_rel_hreflang_attributes', function ( $hreflangs ) {
+	if ( ! is_array( $hreflangs ) ) {
+		return $hreflangs;
+	}
+
+	foreach ( $hreflangs as $lang => $url ) {
+		if ( is_string( $url ) && $url !== '' ) {
+			$hreflangs[ $lang ] = trailingslashit( $url );
+		}
+	}
+
+	$hreflangs['x-default'] = ! empty( $hreflangs['en'] )
+		? $hreflangs['en']
+		: bna_get_universal_home_url();
+
+	return $hreflangs;
+}, 99999 );
+
+add_action( 'template_redirect', function () {
+	if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+		return;
+	}
+
+	ob_start( function ( $html ) {
+		if ( ! is_string( $html ) || $html === '' ) {
+			return $html;
+		}
+
+		$en_url = null;
+		if ( preg_match( '/<link\b[^>]*hreflang\s*=\s*["\']en["\'][^>]*>/i', $html, $en_match ) ) {
+			if ( preg_match( '/href\s*=\s*["\']([^"\']+)["\']/i', $en_match[0], $href_match ) ) {
+				$en_url = trailingslashit( $href_match[1] );
+			}
+		}
+
+		$correct_url = $en_url ? $en_url : bna_get_universal_home_url();
+		$correct     = '<link rel="alternate" href="' . esc_url( $correct_url ) . '" hreflang="x-default" />';
+
+		$html = preg_replace(
+			'/<link\b[^>]*hreflang\s*=\s*["\']x-default["\'][^>]*>\s*/i',
+			'',
+			$html
+		);
+
+		if ( strpos( $html, '</head>' ) !== false ) {
+			$html = str_replace( '</head>', $correct . "\n</head>", $html );
+		}
+
+		return $html;
+	} );
+}, 1 );
