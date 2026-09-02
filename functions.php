@@ -1131,6 +1131,127 @@ function bna_get_hreflang_x_default_url( $hreflangs = null ) {
 	return bna_normalize_hreflang_permalink( get_permalink( $post_id ) );
 }
 
+function bna_get_supported_hreflang_languages() {
+	return array(
+		'en' => array( 'prefix' => '' ),
+		'de' => array( 'prefix' => '/de' ),
+		'fr' => array( 'prefix' => '/fr' ),
+		'nl' => array( 'prefix' => '/nl' ),
+	);
+}
+
+function bna_get_current_request_path() {
+	$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+	$path        = wp_parse_url( $request_uri, PHP_URL_PATH );
+
+	if ( ! is_string( $path ) || $path === '' ) {
+		$path = isset( $GLOBALS['wp']->request ) ? '/' . ltrim( $GLOBALS['wp']->request, '/' ) : '/';
+	}
+
+	return trailingslashit( '/' . ltrim( $path, '/' ) );
+}
+
+function bna_strip_hreflang_language_prefix( $path ) {
+	$base_path = trailingslashit( '/' . ltrim( (string) $path, '/' ) );
+
+	foreach ( bna_get_supported_hreflang_languages() as $data ) {
+		if ( empty( $data['prefix'] ) ) {
+			continue;
+		}
+
+		$prefix = trailingslashit( $data['prefix'] );
+		if ( strpos( $base_path, $prefix ) === 0 ) {
+			return trailingslashit( '/' . ltrim( substr( $base_path, strlen( $prefix ) ), '/' ) );
+		}
+	}
+
+	return $base_path;
+}
+
+function bna_should_generate_fallback_hreflangs() {
+	if ( is_admin() || wp_doing_ajax() || is_feed() || is_search() || is_404() ) {
+		return false;
+	}
+
+	if ( is_paged() || is_archive() || is_category() || is_tag() || is_tax() || is_post_type_archive() || is_singular( 'galleries' ) ) {
+		return true;
+	}
+
+	$base_path = bna_strip_hreflang_language_prefix( bna_get_current_request_path() );
+
+	if ( preg_match( '#^/(gallery|galleries|products)(/page/[0-9]+)?/$#', $base_path ) ) {
+		return true;
+	}
+
+	if ( preg_match( '#^/galleries/[^/]+/$#', $base_path ) ) {
+		return true;
+	}
+
+	if ( preg_match( '#^/(category|tag)/[^/]+(/page/[0-9]+)?/$#', $base_path ) ) {
+		return true;
+	}
+
+	return false;
+}
+
+function bna_get_fallback_hreflangs_for_current_request() {
+	$hreflangs = array();
+
+	if ( function_exists( 'pll_the_languages' ) ) {
+		$translations = pll_the_languages( array(
+			'raw'           => 1,
+			'hide_if_empty' => 0,
+		) );
+
+		if ( is_array( $translations ) ) {
+			foreach ( $translations as $lang => $data ) {
+				if ( empty( $data['url'] ) ) {
+					continue;
+				}
+
+				$normalized = bna_normalize_hreflang_permalink( $data['url'] );
+				if ( $normalized ) {
+					$hreflangs[ $lang ] = $normalized;
+				}
+			}
+		}
+	}
+
+	$base_path = bna_strip_hreflang_language_prefix( bna_get_current_request_path() );
+
+	foreach ( bna_get_supported_hreflang_languages() as $lang => $data ) {
+		if ( ! empty( $hreflangs[ $lang ] ) ) {
+			continue;
+		}
+
+		$path = empty( $data['prefix'] ) ? $base_path : trailingslashit( $data['prefix'] . $base_path );
+		$hreflangs[ $lang ] = trailingslashit( home_url( $path ) );
+	}
+
+	return $hreflangs;
+}
+
+function bna_render_hreflang_link_tags( $hreflangs ) {
+	$html = '';
+
+	if ( ! is_array( $hreflangs ) || empty( $hreflangs ) ) {
+		return $html;
+	}
+
+	foreach ( $hreflangs as $lang => $url ) {
+		if ( ! $url || $lang === 'x-default' ) {
+			continue;
+		}
+
+		$html .= '<link rel="alternate" href="' . esc_url( trailingslashit( $url ) ) . '" hreflang="' . esc_attr( $lang ) . '" />' . "\n";
+	}
+
+	$x_default = ! empty( $hreflangs['en'] ) ? $hreflangs['en'] : bna_get_hreflang_x_default_url( $hreflangs );
+	$html     .= '<link rel="alternate" href="' . esc_url( trailingslashit( $x_default ) ) . '" hreflang="x-default" />' . "\n";
+
+	return $html;
+}
+
 /**
  * Normalize all Polylang hreflang URLs (fixes ?page_id= on any language).
  */
@@ -1487,6 +1608,21 @@ function bna_fix_redirect_chains() {
 }
 add_action( 'template_redirect', 'bna_fix_redirect_chains' );
 
+function bna_generate_hreflang_tags() {
+	if ( ! bna_should_generate_fallback_hreflangs() ) {
+		return;
+	}
+
+	$hreflangs = bna_get_fallback_hreflangs_for_current_request();
+
+	if ( empty( $hreflangs ) ) {
+		return;
+	}
+
+	echo bna_render_hreflang_link_tags( $hreflangs );
+}
+add_action( 'wp_head', 'bna_generate_hreflang_tags', 5 );
+
 
 add_filter( 'wpseo_hreflang_output', function ( $output ) {
 	$parsed_hreflangs = array();
@@ -1597,6 +1733,36 @@ add_action('wp_head', function() {
         echo '<link rel="canonical" href="' . esc_url( home_url( $clean_path ) ) . '" />';
     }
 }, 1);
+
+add_action( 'template_redirect', function () {
+	if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+		return;
+	}
+
+	ob_start( function ( $html ) {
+		if ( ! is_string( $html ) || $html === '' || ! bna_should_generate_fallback_hreflangs() ) {
+			return $html;
+		}
+
+		$links = bna_render_hreflang_link_tags( bna_get_fallback_hreflangs_for_current_request() );
+
+		if ( $links === '' ) {
+			return $html;
+		}
+
+		$html = preg_replace(
+			'/<link\b(?=[^>]*\brel\s*=\s*["\'][^"\']*\balternate\b[^"\']*["\'])(?=[^>]*\bhreflang\s*=)[^>]*>\s*/i',
+			'',
+			$html
+		);
+
+		if ( strpos( $html, '</head>' ) !== false ) {
+			$html = str_replace( '</head>', $links . '</head>', $html );
+		}
+
+		return $html;
+	} );
+}, 1 );
 
 // add_action('wp_head', function() {
 //     if (is_paged()) {
