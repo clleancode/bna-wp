@@ -7,7 +7,11 @@
 ?>
 
 <div class="search-results container">
+<<<<<<< HEAD
 <h1 class="search-title"><?php printf( esc_html__( 'Search Results for: %s', 'balkan-nature-adventure' ), '<span>' . get_search_query() . '</span>' ); ?></h1>
+=======
+     <h1 class="search-title"><?php printf( esc_html__( 'Search Results for: %s', 'balkan-nature-adventure' ), '<span>' . get_search_query() . '</span>' ); ?></h1>
+>>>>>>> fee1ca98bbdca1f02a26613eb19fea2d81eef955
         <?php if ( have_posts() ) : ?>
             <?php while ( have_posts() ) : the_post(); ?>
                 <div class="post">

@@ -38,11 +38,12 @@
         ?>
     </div>
     <div class="gallery-btn">
-    <?php
+        <?php
         $galleries_page = get_page_by_path( 'gallery' );
         $galleries_url  = $galleries_page
             ? get_permalink( $galleries_page )
             : get_post_type_archive_link( 'galleries' );
         ?>
-        <a class="btn" href="<?php echo esc_url( $galleries_url ); ?>">More Galleries  <span class="icon-angle-double-down"></span></a>    </div>
+        <a class="btn" href="<?php echo esc_url( $galleries_url ); ?>">More Galleries  <span class="icon-angle-double-down"></span></a>
+    </div>
 </div>

@@ -316,7 +316,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 
 			acf_register_block_type(array(
 				'name'				=> 'block-gallery-images',
-				'title'				=> __('AB Block - Gallery'),
+				'title'				=> __('AB Block - Gallery Images'),
 				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
@@ -562,6 +562,16 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-news.php'
+			));
+			
+			acf_register_block_type(array(
+				'name'				=> 'block-gallery',
+				'title'				=> __('AB Block - Gallery'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
+				'category'			=> 'layout',
+				'icon'				=> 'category',
+				'keywords'			=> array( 'text' ),
+				'render_template'	=> 'includes/blocks/block-gallery.php'
 			));
 			
 			acf_register_block_type(array(
@@ -1292,7 +1302,7 @@ function bna_ensure_content_images_have_alt( $content ) {
 }
 add_filter( 'the_content', 'bna_ensure_content_images_have_alt', 20 );
 
-function bna_add_sr_only_h2() {
+function bna_add_sr_only_h1() {
 	if ( ! ( is_singular() || is_front_page() || is_page() ) ) {
 		return;
 	}
@@ -1311,7 +1321,7 @@ function bna_add_sr_only_h2() {
 		esc_html( get_the_title( $post ) )
 	);
 }
-add_action( 'wp_body_open', 'bna_add_sr_only_h2' );
+add_action( 'wp_body_open', 'bna_add_sr_only_h1' );
 
 // add_action('template_redirect', function () {
 //     ob_start(function ($html) {
