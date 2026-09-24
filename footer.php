@@ -19,11 +19,22 @@
         <div class="footer container">
             <div class="footer-top">
                 <h2><?php the_field('newsletter_bold_title', 'option') ?> <br> <span><?php the_field('newsletter_title', 'option') ?></span></h2>
-                <div class="newsletter">
-                    <span class="icon-envelope"></span>
-                    <input type="email" id="email" name="email"  placeholder="Email Address">
-                    <a href="#" class="btn">Subscribe <span class="icon-angle-double-down"></span></a>
-                </div>
+                <form class="newsletter" method="post" action="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php esc_attr_e( 'Newsletter signup', 'balkan-nature-adventure' ); ?>">
+                    <span class="icon-envelope" aria-hidden="true"></span>
+                    <label class="sr-only" for="footer-newsletter-email"><?php esc_html_e( 'Email Address', 'balkan-nature-adventure' ); ?></label>
+                    <input
+                        type="email"
+                        id="footer-newsletter-email"
+                        name="email"
+                        placeholder="<?php echo esc_attr__( 'Email Address', 'balkan-nature-adventure' ); ?>"
+                        autocomplete="email"
+                        required
+                    >
+                    <button type="submit" class="btn">
+                        <?php esc_html_e( 'Subscribe', 'balkan-nature-adventure' ); ?>
+                        <span class="icon-angle-double-down" aria-hidden="true"></span>
+                    </button>
+                </form>
             </div>
             <div class="footer-center">
                 <div class="row">
@@ -71,10 +82,10 @@
                         <ul>
                             <?php while(have_rows('pages_link', 'option')): the_row(); $numberOfSlides++; ?>
                                 <li><a href="<?php the_sub_field('page_link', 'option'); ?>"><?php the_sub_field('page_title', 'option'); ?></a></li>
-                            <?php endwhile; wp_reset_postdata(); ?> 
+                            <?php endwhile; ?> 
                         </ul>
                     </div>
-                <?php endwhile; wp_reset_postdata(); ?> 
+                <?php endwhile; ?> 
                 <div class="row">
                    <?php the_field('content', 'option'); ?>
                 </div>
@@ -84,7 +95,7 @@
                 <div class="footer-bottom--left">
                     <?php while(have_rows('site_links', 'option')): the_row(); $numberOfSlides++; ?>
                         <a href="<?php the_sub_field('site_link', 'option'); ?>"><?php the_sub_field('site_title', 'option'); ?></a>
-                    <?php endwhile; wp_reset_postdata(); ?> 
+                    <?php endwhile; ?> 
                     
                 </div>
             </div>

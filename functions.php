@@ -13,13 +13,40 @@
 
 	if (!function_exists('balkan_nature_adventure_setup')) :
 		function balkan_nature_adventure_setup() {
+			load_theme_textdomain( 'balkan-nature-adventure', get_template_directory() . '/languages' );
+
 			add_theme_support( 'title-tag' );
 			add_theme_support( 'post-thumbnails' );
+			add_theme_support( 'automatic-feed-links' );
+			add_theme_support( 'responsive-embeds' );
+			add_theme_support( 'wp-block-styles' );
+			add_theme_support( 'align-wide' );
+			add_theme_support(
+				'html5',
+				array(
+					'search-form',
+					'comment-form',
+					'comment-list',
+					'gallery',
+					'caption',
+					'style',
+					'script',
+				)
+			);
+			add_theme_support(
+				'custom-logo',
+				array(
+					'height'      => 100,
+					'width'       => 400,
+					'flex-height' => true,
+					'flex-width'  => true,
+				)
+			);
 
 			register_nav_menus(
 				array(
-					'primary'=> __('Primary Menu'),
-					'mobile'=> __('Mobile Menu')
+					'primary'=> __( 'Primary Menu', 'balkan-nature-adventure' ),
+					'mobile'=> __( 'Mobile Menu', 'balkan-nature-adventure' )
 				)
 			);
 		}
@@ -27,34 +54,33 @@
 
 	add_action( 'after_setup_theme', 'balkan_nature_adventure_setup' );
 
+	
 	/**
-	* Enqueue scripts and styles -- enqueue scripts later (footer)
-	*
-	* Add versioning and enable efficient browser cache for static resources.
-	*/
+ * Sanitize embed markup while allowing safe iframe attributes.
+ *
+ * @param string $html Embed markup.
+ * @return string
+ */
+function bna_kses_embed( $html ) {
+	$allowed_html = wp_kses_allowed_html( 'post' );
 
-	// Set efficient browser cache lifetimes for static resources (images, CSS, JS, fonts)
-	// function bnadventure_set_assets_cache_headers( $headers ) {
-	// 	// Do not break admin
-	// 	if ( is_admin() ) return $headers;
-	// 	if ( isset( $_SERVER['REQUEST_URI'] ) ) {
-	// 		$static_extensions = array('jpg', 'jpeg', 'png', 'svg', 'gif', 'webp', 'woff2', 'woff', 'ttf', 'eot');
-	// 		$path = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH );
-	// 		$ext  = strtolower( pathinfo( $path, PATHINFO_EXTENSION ) );
-	// 		if ( in_array( $ext, $static_extensions ) ) {
-	// 			$headers['Cache-Control'] = 'public, max-age=31536000, immutable'; // 1 year
-	// 		}
-	// 	}
-	// 	return $headers;
-	// }
-	// add_filter( 'wp_headers', 'bnadventure_set_assets_cache_headers', 15 );
+	$allowed_html['iframe'] = array(
+		'allow'           => true,
+		'allowfullscreen' => true,
+		'class'           => true,
+		'frameborder'     => true,
+		'height'          => true,
+		'loading'         => true,
+		'referrerpolicy'  => true,
+		'sandbox'         => true,
+		'src'             => true,
+		'title'           => true,
+		'width'           => true,
+	);
 
-// 	add_action('wp_head', function() {
-//     $theme_dir     = get_template_directory();
-//     $theme_dir_uri = get_template_directory_uri();
-//     $ver = file_exists($theme_dir . '/css/style.css') ? filemtime($theme_dir . '/css/style.css') : '1';
-//     echo '<link rel="preload" href="' . $theme_dir_uri . '/css/style.css?ver=' . $ver . '" as="style" crossorigin>';
-// }, 1);
+	return wp_kses( (string) $html, $allowed_html );
+}
+
 
 function balkan_nature_adventure_scripts() {
 	$theme_dir     = get_template_directory();
@@ -106,7 +132,7 @@ function balkan_nature_adventure_scripts() {
 		'main-js',
 		$theme_dir_uri . '/js/script.js',
 		array( 'jquery' ),
-		file_exists( $theme_dir . '/js/script.js' ) ? filemtime( $theme_dir . '/js/script.js' ) : null,
+		file_exists( $theme_dir . '/js/script.js' ) ? filemtime( $theme_dir . '/js/script.js' ) : '1.0',
 		true
 	);
 
@@ -118,14 +144,6 @@ function balkan_nature_adventure_scripts() {
          true
      );
 
-	wp_localize_script(
-		'main-js',
-		'specialObj',
-		array(
-			'ajaxurl'  => admin_url( 'admin-ajax.php' ),
-			'security' => wp_create_nonce( 'load_posts' ),
-		)
-	);
 }
 add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 
@@ -144,292 +162,359 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 	}
 
 	/**
+	 * ACF Local JSON support.
+	 */
+
+	function bna_acf_json_path() {
+		return get_stylesheet_directory() . '/acf-json';
+	}
+
+	function bna_acf_json_save_point( $path ) {
+		$path = bna_acf_json_path();
+
+		if ( ! is_dir( $path ) ) {
+			wp_mkdir_p( $path );
+		}
+
+		return $path;
+	}
+	add_filter( 'acf/settings/save_json', 'bna_acf_json_save_point' );
+
+	function bna_acf_json_load_point( $paths ) {
+		$path = bna_acf_json_path();
+
+		if ( ! in_array( $path, $paths, true ) ) {
+			$paths[] = $path;
+		}
+
+		return $paths;
+	}
+	add_filter( 'acf/settings/load_json', 'bna_acf_json_load_point' );
+
+	/**
+	 * ACF Blocks - Force V3.
+	 */
+	function bna_acf_blocks_default_to_v3( $version, $block ) {
+		return 3;
+	}
+	add_filter( 'acf/blocks/default_block_version', 'bna_acf_blocks_default_to_v3', 10, 2 );
+
+	/**
+	 * ACF Blocks V3 compatibility.
+	 */
+	function bna_acf_register_block_v3_args( $args ) {
+		$args['api_version']       = 3;
+		$args['acf_block_version'] = 3;
+
+		/**
+		 * Hide ACF fields from Gutenberg sidebar.
+		 * Fields will be edited in the Expanded Editor.
+		 */
+		$args['hide_fields_in_sidebar'] = true;
+
+		return $args;
+	}
+	add_filter(
+		'acf/register_block_type_args',
+		'bna_acf_register_block_v3_args',
+		20
+	);
+
+	/**
+	 * Expanded Editor button text.
+	 */
+	function bna_acf_expanded_editor_button_text( $button_text, $block ) {
+		return __( 'Open Expanded Editor', 'balkan-nature-adventure' );
+	}
+	add_filter( 'acf/blocks/default_expanded_editor_button_text', 'bna_acf_expanded_editor_button_text', 10, 2 );
+
+	/**
 	 * Register ACF Blocks
 	 */
 
-	function acf_content_block() {
-		if( function_exists('acf_register_block') ) {
-			acf_register_block(array(
+	 function acf_content_block() {
+		if( function_exists('acf_register_block_type') ) {
+			acf_register_block_type(array(
 				'name'				=> 'block-home--banner-slider',
 				'title'				=> __('AB Block - Home Banner Slider'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-home--banner-slider.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-products',
 				'title'				=> __('AB Block - Products'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-products.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-about-us',
 				'title'				=> __('AB Block - About Us'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-about-us.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-video',
 				'title'				=> __('AB Block - Video'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-video.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-location',
 				'title'				=> __('AB Block - Location'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-location.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-overlay-boxes',
 				'title'				=> __('AB Block - Overlay Boxes'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-overlay-boxes.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-why-choose-us',
 				'title'				=> __('AB Block - Why Choose Us'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-why-choose-us.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-green-banner',
 				'title'				=> __('AB Block - Green Banner'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-green-banner.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-gallery-images',
-				'title'				=> __('AB Block - Gallery Images'),
-				'description'		=> __('Page content image and text block'),
+				'title'				=> __('AB Block - Gallery'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-gallery-images.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-testimonial',
 				'title'				=> __('AB Block - Testimonial'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-testimonial.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-banner',
 				'title'				=> __('AB Block - Banner'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-banner.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-about',
 				'title'				=> __('AB Block - About'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-about.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-partners',
 				'title'				=> __('AB Block - Partners'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-partners.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-who-we-are',
 				'title'				=> __('AB Block - Who We Are'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-who-we-are.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-tab-with-accordion',
 				'title'				=> __('AB Block - Tab With Accordion'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-tab-with-accordion.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-discover-more',
 				'title'				=> __('AB Block - Discover More'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-discover-more.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-contact',
 				'title'				=> __('AB Block - Contact'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-contact.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-content',
 				'title'				=> __('AB Block - Content'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-content.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-cities-content',
 				'title'				=> __('AB Block - Cities Content'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-cities-content.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-cities-content--reverse',
 				'title'				=> __('AB Block - Cities Content Reverse'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-cities-content--reverse.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-documents',
 				'title'				=> __('AB Block - Documents'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-documents.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-about-location',
 				'title'				=> __('AB Block - About Location'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-about-location.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-destination-kosove',
 				'title'				=> __('AB Block - Destination Kosove'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-destination-kosove.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-destination-albania',
 				'title'				=> __('AB Block - Destination Albania'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-destination-albania.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-destination-montenegro',
 				'title'				=> __('AB Block - Destination Montenegro'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-destination-montenegro.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-content-with-image',
 				'title'				=> __('AB Block - Content With Image'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-content-with-image.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-slider',
 				'title'				=> __('AB Block - Slider'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-slider.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-accordion',
 				'title'				=> __('AB Block - Accordion'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-accordion.php'
 			));
 			
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-destinations',
 				'title'				=> __('Block - Destinations'),
 				'description'		=> __('Section to include destinations'),
@@ -439,149 +524,139 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 				'render_template'	=> 'includes/blocks/block-destinations.php'
 			));
 			
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-iframe-map',
 				'title'				=> __('AB Block - Iframe Map'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-iframe-map.php'
 			));
 			
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-iframe-video',
 				'title'				=> __('AB Block - Iframe Video'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-iframe-video.php'
 			));
 			
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-blog',
 				'title'				=> __('AB Block - Blog'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-blog.php'
 			));
 			
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-news',
 				'title'				=> __('AB Block - News'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-news.php'
 			));
 			
-			acf_register_block(array(
-				'name'				=> 'block-gallery',
-				'title'				=> __('AB Block - Gallery'),
-				'description'		=> __('Page content image and text block'),
-				'category'			=> 'layout',
-				'icon'				=> 'category',
-				'keywords'			=> array( 'text' ),
-				'render_template'	=> 'includes/blocks/block-gallery.php'
-			));
-			
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-single-gallery',
 				'title'				=> __('AB Block - Single Gallery'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-single-gallery.php'
 			));
 			
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-team',
 				'title'				=> __('AB Block - Team'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-team.php'
 			));
 			
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-header-slider',
 				'title'				=> __('AB Block - Header Slider'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-header-slider.php'
 			));
 			
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-slider-with-title',
 				'title'				=> __('AB Block - Slider With Title'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-slider-with-title.php'
 			));
 			
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-location-testimonial',
 				'title'				=> __('AB Block - Location Testimonial'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-location-testimonial.php'
 			));
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-share-item',
 				'title'				=> __('AB Block - Share Item'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-share-item.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-trip-advisor',
 				'title'				=> __('AB Block - Trip Advisor'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-trip-advisor.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-shortcode',
 				'title'				=> __('AB Block - Shortcode'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-shortcode.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block--iframe-tripadvisort',
 				'title'				=> __('AB Block - Iframe Tripadvisort'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
 				'render_template'	=> 'includes/blocks/block-iframe-tripadvisort.php'
 			));
 
-			acf_register_block(array(
+			acf_register_block_type(array(
 				'name'				=> 'block-custom-code',
 				'title'				=> __('AB Block - Custom Code'),
-				'description'		=> __('Page content image and text block'),
+				'description'		=> __( 'Page content image and text block', 'balkan-nature-adventure' ),
 				'category'			=> 'layout',
 				'icon'				=> 'category',
 				'keywords'			=> array( 'text' ),
@@ -694,8 +769,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 		}
 	
 		// Verify nonce
-		if ( ! wp_verify_nonce( $_POST['product_category_nonce'], basename( __FILE__ ) ) ) {
-			return;
+		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['product_category_nonce'] ) ), basename( __FILE__ ) ) ) {			return;
 		}
 	
 		// Check if the user has permissions to save data
@@ -779,14 +853,17 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 	}
 	add_filter('nav_menu_css_class', 'add_additional_class_on_li', 1, 3);
 
-	function custom_search_filter($query) {
-		if ($query->is_search) {
-			$query->set( 'post_type', array( 'post', 'destination', 'galleries', 'page', 'attachment', 'video') );
-			$query->set('search_title', true);
+	function custom_search_filter( $query ) {
+		if ( is_admin() || ! $query->is_main_query() || ! $query->is_search() ) {
+			return $query;
 		}
+
+		$query->set( 'post_type', array( 'post', 'destination', 'galleries', 'page', 'video' ) );
+		$query->set( 'search_title', true );
+
 		return $query;
 	}
-	add_filter('pre_get_posts', 'custom_search_filter');
+	add_filter( 'pre_get_posts', 'custom_search_filter' );
 
 	add_post_type_support( 'page', 'excerpt' );
 
@@ -908,20 +985,13 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 	add_filter( 'script_loader_tag', function ( $tag, $handle ) {
 		if ( is_admin() ) return $tag;
 
-		$delay = array( 'swiper', 'bundle-js', 'fancybox', 'main-js' );
+		$deferred_scripts = array( 'swiper', 'bundle-js', 'fancybox', 'main-js' );
 
-		if ( ! in_array( $handle, $delay, true ) ) return $tag;
+		if ( ! in_array( $handle, $deferred_scripts, true ) ) return $tag;
 
-		if ( ! preg_match( '/src=["\']([^"\']+)["\']/', $tag, $matches ) ) return $tag;
-		$src = $matches[1];
-		$timeout = ( $handle === 'swiper' ) ? 2000 : 3000;
+		if ( false !== strpos( $tag, ' defer' ) ) return $tag;
 
-		return '<script>setTimeout(function(){' .
-			'var s=document.createElement("script");' .
-			's.src="' . esc_js( $src ) . '";' .
-			's.defer=true;' .
-			'document.body.appendChild(s);' .
-			'},' . $timeout . ');</script>' . "\n";
+		return str_replace( '<script ', '<script defer ', $tag );
 	}, 10, 2 );
 
 
@@ -994,61 +1064,138 @@ function bna_normalize_hreflang_permalink( $url ) {
 	return trailingslashit( $url );
 }
 
+function bna_get_universal_home_url() {
+	return trailingslashit( set_url_scheme( get_option( 'home' ) ) );
+}
+
 /**
- * x-default URL: same page in the current language (matches the URL you are on).
+ * x-default URL: always points to the universal root.
  *
  * @param array|null $hreflangs Optional Polylang hreflang map (lang => url).
  */
 function bna_get_hreflang_x_default_url( $hreflangs = null ) {
-	if ( is_array( $hreflangs ) ) {
-		if ( function_exists( 'pll_current_language' ) ) {
-			$lang = pll_current_language( 'slug' );
-			if ( $lang ) {
-				foreach ( array( $lang, $lang . '-' . strtoupper( $lang ) ) as $key ) {
-					if ( ! empty( $hreflangs[ $key ] ) ) {
-						return bna_normalize_hreflang_permalink( $hreflangs[ $key ] );
-					}
+	return bna_get_universal_home_url();
+}
+
+function bna_get_supported_hreflang_languages() {
+	return array(
+		'en' => array( 'prefix' => '' ),
+		'de' => array( 'prefix' => '/de' ),
+		'fr' => array( 'prefix' => '/fr' ),
+		'nl' => array( 'prefix' => '/nl' ),
+	);
+}
+
+function bna_get_current_request_path() {
+	$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+	$path        = wp_parse_url( $request_uri, PHP_URL_PATH );
+
+	if ( ! is_string( $path ) || $path === '' ) {
+		$path = isset( $GLOBALS['wp']->request ) ? '/' . ltrim( $GLOBALS['wp']->request, '/' ) : '/';
+	}
+
+	return trailingslashit( '/' . ltrim( $path, '/' ) );
+}
+
+function bna_strip_hreflang_language_prefix( $path ) {
+	$base_path = trailingslashit( '/' . ltrim( (string) $path, '/' ) );
+
+	foreach ( bna_get_supported_hreflang_languages() as $data ) {
+		if ( empty( $data['prefix'] ) ) {
+			continue;
+		}
+
+		$prefix = trailingslashit( $data['prefix'] );
+		if ( strpos( $base_path, $prefix ) === 0 ) {
+			return trailingslashit( '/' . ltrim( substr( $base_path, strlen( $prefix ) ), '/' ) );
+		}
+	}
+
+	return $base_path;
+}
+
+function bna_should_generate_fallback_hreflangs() {
+	if ( is_admin() || wp_doing_ajax() || is_feed() || is_search() || is_404() ) {
+		return false;
+	}
+
+	if ( is_paged() || is_archive() || is_category() || is_tag() || is_tax() || is_post_type_archive() || is_singular( 'galleries' ) ) {
+		return true;
+	}
+
+	$base_path = bna_strip_hreflang_language_prefix( bna_get_current_request_path() );
+
+	if ( preg_match( '#^/(gallery|galleries|products)(/page/[0-9]+)?/$#', $base_path ) ) {
+		return true;
+	}
+
+	if ( preg_match( '#^/galleries/[^/]+/$#', $base_path ) ) {
+		return true;
+	}
+
+	if ( preg_match( '#^/(category|tag)/[^/]+(/page/[0-9]+)?/$#', $base_path ) ) {
+		return true;
+	}
+
+	return false;
+}
+
+function bna_get_fallback_hreflangs_for_current_request() {
+	$hreflangs = array();
+
+	if ( function_exists( 'pll_the_languages' ) ) {
+		$translations = pll_the_languages( array(
+			'raw'           => 1,
+			'hide_if_empty' => 0,
+		) );
+
+		if ( is_array( $translations ) ) {
+			foreach ( $translations as $lang => $data ) {
+				if ( empty( $data['url'] ) ) {
+					continue;
+				}
+
+				$normalized = bna_normalize_hreflang_permalink( $data['url'] );
+				if ( $normalized ) {
+					$hreflangs[ $lang ] = $normalized;
 				}
 			}
 		}
+	}
 
-		if ( ! empty( $hreflangs['en'] ) ) {
-			return bna_normalize_hreflang_permalink( $hreflangs['en'] );
+	$base_path = bna_strip_hreflang_language_prefix( bna_get_current_request_path() );
+
+	foreach ( bna_get_supported_hreflang_languages() as $lang => $data ) {
+		if ( ! empty( $hreflangs[ $lang ] ) ) {
+			continue;
 		}
+
+		$path = empty( $data['prefix'] ) ? $base_path : trailingslashit( $data['prefix'] . $base_path );
+		$hreflangs[ $lang ] = trailingslashit( home_url( $path ) );
 	}
 
-	if ( ! function_exists( 'pll_get_post' ) ) {
-		return null;
+	return $hreflangs;
+}
+
+function bna_render_hreflang_link_tags( $hreflangs ) {
+	$html = '';
+
+	if ( ! is_array( $hreflangs ) || empty( $hreflangs ) ) {
+		return $html;
 	}
 
-	// Current language first (/fr/, /de/, /nl/, or plain EN).
-	if ( function_exists( 'pll_current_language' ) && function_exists( 'pll_translation_url' ) ) {
-		$lang = pll_current_language( 'slug' );
-		if ( $lang ) {
-			$url = pll_translation_url( $lang );
-			if ( $url ) {
-				return bna_normalize_hreflang_permalink( $url );
-			}
+	foreach ( $hreflangs as $lang => $url ) {
+		if ( ! $url || $lang === 'x-default' ) {
+			continue;
 		}
+
+		$html .= '<link rel="alternate" href="' . esc_url( trailingslashit( $url ) ) . '" hreflang="' . esc_attr( $lang ) . '" />' . "\n";
 	}
 
-	if ( function_exists( 'pll_translation_url' ) ) {
-		$url = pll_translation_url( 'en' );
-		if ( ! $url && function_exists( 'pll_default_language' ) ) {
-			$url = pll_translation_url( pll_default_language() );
-		}
-		if ( $url ) {
-			return bna_normalize_hreflang_permalink( $url );
-		}
-	}
+	$x_default = ! empty( $hreflangs['en'] ) ? $hreflangs['en'] : bna_get_hreflang_x_default_url( $hreflangs );
+	$html     .= '<link rel="alternate" href="' . esc_url( trailingslashit( $x_default ) ) . '" hreflang="x-default" />' . "\n";
 
-	$post_id = get_queried_object_id();
-
-	if ( ! $post_id ) {
-		return null;
-	}
-
-	return bna_normalize_hreflang_permalink( get_permalink( $post_id ) );
+	return $html;
 }
 
 /**
@@ -1145,18 +1292,26 @@ function bna_ensure_content_images_have_alt( $content ) {
 }
 add_filter( 'the_content', 'bna_ensure_content_images_have_alt', 20 );
 
-function bna_add_sr_only_h1() {
-    if ( is_singular() || is_front_page() || is_page() ) {
-        global $post;
-        $content = $post->post_content;
+function bna_add_sr_only_h2() {
+	if ( ! ( is_singular() || is_front_page() || is_page() ) ) {
+		return;
+	}
 
-        if ( stripos( $content, '<h1' ) === false ) {
-            $title = get_the_title( $post->ID );
-            echo '<h1 class="sr-only">' . esc_html( $title ) . '</h1>';
-        }
-    }
+	global $post;
+	if ( ! $post instanceof WP_Post ) {
+		return;
+	}
+
+	if ( stripos( (string) $post->post_content, '<h1' ) !== false ) {
+		return;
+	}
+
+	printf(
+		'<h2 class="sr-only">%s</h2>' . "\n",
+		esc_html( get_the_title( $post ) )
+	);
 }
-add_action( 'wp_head', 'bna_add_sr_only_h1' );
+add_action( 'wp_body_open', 'bna_add_sr_only_h2' );
 
 // add_action('template_redirect', function () {
 //     ob_start(function ($html) {
@@ -1202,6 +1357,17 @@ function bn_fix_og_image($image) {
         $image
     );
 }
+
+// Filter Yoast Open Graph URL for paginated taxonomy archives.
+add_filter( 'wpseo_opengraph_url', function ( $url ) {
+	if ( is_paged() && ( is_category() || is_tag() || is_tax() ) ) {
+		$paged = max( 1, (int) get_query_var( 'paged' ) );
+
+		return esc_url( get_pagenum_link( $paged ) );
+	}
+
+	return $url;
+} );
 
 function bna_fix_archive_pagination_query( $query ) {
     if ( is_admin() || ! $query->is_main_query() ) {
@@ -1251,22 +1417,6 @@ add_filter('redirect_canonical', function ($redirect_url, $requested_url) {
 // add_filter('redirect_canonical', function($redirect_url) {
 //     return false;
 // });
-
-
-add_filter( 'pll_rel_hreflang_attributes', function ( $hreflangs ) {
-	if ( ! is_array( $hreflangs ) ) {
-		return $hreflangs;
-	}
-
-	$hreflangs = bna_normalize_hreflang_attributes( $hreflangs );
-
-	$x_default = bna_get_hreflang_x_default_url( $hreflangs );
-	if ( $x_default ) {
-		$hreflangs['x-default'] = $x_default;
-	}
-
-	return $hreflangs;
-}, 20 );
 
 
 function safe_mobile_image_fix($attr) {
@@ -1380,9 +1530,44 @@ add_action('init', function () {
 
 }, 0);
 
+function bna_is_nl_peaks_legacy_product_path( $url_or_path = '' ) {
+    $path = parse_url( (string) $url_or_path, PHP_URL_PATH );
+    $path = is_string( $path ) ? trailingslashit( $path ) : '';
+
+    return $path === '/nl/products/peaks-of-the-balkans-trail/';
+}
+
+add_filter( 'request', function ( $query_vars ) {
+    $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+
+    if ( ! bna_is_nl_peaks_legacy_product_path( $request_uri ) ) {
+        return $query_vars;
+    }
+
+    $product = get_page_by_path( 'pics-van-de-balkan-trail', OBJECT, 'destination' );
+
+    if ( ! $product ) {
+        return $query_vars;
+    }
+
+    return array(
+        'post_type' => 'destination',
+        'p'         => $product->ID,
+        'lang'      => 'nl',
+    );
+}, 0 );
+
+add_filter( 'redirect_canonical', function ( $redirect_url, $requested_url ) {
+    if ( is_admin() || ! bna_is_nl_peaks_legacy_product_path( $requested_url ) ) {
+        return $redirect_url;
+    }
+
+    return false;
+}, 0, 2 );
+
 function bna_fix_redirect_chains() {
     $redirects = array(
-        '/destination/peaks-of-the-balkans-trail/'                          => '/peaks-of-the-balkans/',
+        '/destination/peaks-of-the-balkans-trail/'                          => '/peaks-of-the-balkans-eng/',
         '/products/via-ferrata-mat-and-ari/'                                => '/products/onvia-ferrata-mat-en-ari/',
         '/products/guided-high-scardus-2024/'                               => '/products/guided-high-scardus-2026/',
         '/nl/products/via-ferrata-mat-and-ari-2/'                           => '/nl/products/ontdek-via-ferrata-mat-en-ari/',
@@ -1400,45 +1585,23 @@ function bna_fix_redirect_chains() {
 add_action( 'template_redirect', 'bna_fix_redirect_chains' );
 
 
-add_filter( 'wpseo_hreflang_output', function ( $output ) {
-	$parsed_hreflangs = array();
-
-	if ( preg_match_all( '/<link rel="alternate" href="([^"]+)" hreflang="([a-z]{2}(?:-[A-Za-z]+)?)" \/>/i', $output, $matches, PREG_SET_ORDER ) ) {
-		foreach ( $matches as $match ) {
-			$parsed_hreflangs[ $match[2] ] = $match[1];
-		}
+/**
+ * BNA Hreflang Generator - fallback for archives and paginated pages.
+ */
+function bna_generate_hreflang_tags() {
+	if ( ! bna_should_generate_fallback_hreflangs() ) {
+		return;
 	}
 
-	$x_default = bna_get_hreflang_x_default_url( $parsed_hreflangs );
+	$hreflangs = bna_get_fallback_hreflangs_for_current_request();
 
-	if ( ! $x_default && function_exists( 'pll_current_language' ) ) {
-		$lang = pll_current_language( 'slug' );
-		if ( $lang && ! empty( $parsed_hreflangs[ $lang ] ) ) {
-			$x_default = $parsed_hreflangs[ $lang ];
-		}
+	if ( empty( $hreflangs ) ) {
+		return;
 	}
 
-	if ( ! $x_default && ! empty( $parsed_hreflangs['en'] ) ) {
-		$x_default = $parsed_hreflangs['en'];
-	}
-
-	$x_default = bna_normalize_hreflang_permalink( $x_default );
-
-	if ( ! $x_default ) {
-		return $output;
-	}
-
-	$output = preg_replace(
-		'/<link rel="alternate" href="[^"]+" hreflang="x-default"[^>]*\/?>/i',
-		'',
-		$output
-	);
-
-	$output .= "\n" . '<link rel="alternate" href="' . esc_url( $x_default ) . '" hreflang="x-default" />';
-
-	return $output;
-}, 99 );
-
+	echo bna_render_hreflang_link_tags( $hreflangs );
+}
+add_action( 'wp_head', 'bna_generate_hreflang_tags', 5 );
 
 add_action('template_redirect', function () {
 
@@ -1471,10 +1634,12 @@ add_action('template_redirect', function () {
     if (is_admin() || wp_doing_ajax()) return;
 
     $uri = $_SERVER['REQUEST_URI'] ?? '';
+    $path = parse_url( $uri, PHP_URL_PATH );
+    $path = is_string( $path ) ? trailingslashit( $path ) : '';
 
-    if (strpos($uri, '/products/peaks-of-the-balkans-trail/') !== false) {
+    if ( $path === '/products/peaks-of-the-balkans-trail/' ) {
 
-        $target = home_url('/peaks-of-the-balkans/');
+        $target = home_url('/peaks-of-the-balkans-eng/');
 
         if (!defined('DONOTCACHEPAGE')) {
             define('DONOTCACHEPAGE', true);
@@ -1493,15 +1658,6 @@ add_action('template_redirect', function () {
 }, 0);
 
 
-function move_jquery_to_footer() {
-    if (!is_admin()) {
-        wp_deregister_script('jquery');
-        wp_register_script('jquery', includes_url('/js/jquery/jquery.min.js'), false, null, true);
-        wp_enqueue_script('jquery');
-    }
-}
-add_action('wp_enqueue_scripts', 'move_jquery_to_footer');
-
 function remove_noindex_for_pagination() {
     if ( is_paged() ) {
         remove_action( 'wp_head', 'wp_no_robots' );
@@ -1511,8 +1667,11 @@ add_action( 'wp_head', 'remove_noindex_for_pagination', 1 );
 
 add_action('wp_head', function() {
     if (isset($_GET['envira-downloads-gallery-id']) || isset($_GET['envira-downloads-gallery-image'])) {
-        $clean_url = strtok($_SERVER['REQUEST_URI'], '?');
-        echo '<link rel="canonical" href="' . home_url($clean_url) . '" />';
+        $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '/';
+        $clean_path  = wp_parse_url( $request_uri, PHP_URL_PATH );
+        $clean_path  = is_string( $clean_path ) ? $clean_path : '/';
+
+        echo '<link rel="canonical" href="' . esc_url( home_url( $clean_path ) ) . '" />';
     }
 }, 1);
 
@@ -1536,11 +1695,7 @@ add_action('template_redirect', function() {
     }
 });
 
-add_action('wp_head', function() {
-    if (is_front_page()) {
-        echo '<link rel="preload" as="image" href="https://bnadventure.com/wp-content/uploads/2026/05/BNA_2173-e1601378743829-1024x741-1-1-768x556.webp" fetchpriority="high">';
-    }
-}, 1);
+
 
 
 add_filter('jpeg_quality', fn($q) => 65);
@@ -1604,14 +1759,25 @@ add_action('template_redirect', function () {
             }
             if (!preg_match('/src=["\']([^"\']+)["\']/', $tag, $src)) return $tag;
             $url = $src[1];
-            $id  = attachment_url_to_postid($url);
-            if ($id) {
-                $alt = get_post_meta($id, '_wp_attachment_image_alt', true);
-                if (!$alt) $alt = get_the_title($id);
-            } else {
-                $alt = pathinfo(basename($url), PATHINFO_FILENAME);
-                $alt = str_replace(['-', '_'], ' ', $alt);
+
+            // Cache the resolved alt per image URL so we don't hit
+            // attachment_url_to_postid() (slow LIKE query) + get_post_meta()
+            // on every single page load for every image.
+            $cache_key = 'bna_img_alt_' . md5($url);
+            $alt = get_transient($cache_key);
+
+            if (false === $alt) {
+                $id = attachment_url_to_postid($url);
+                if ($id) {
+                    $alt = get_post_meta($id, '_wp_attachment_image_alt', true);
+                    if (!$alt) $alt = get_the_title($id);
+                } else {
+                    $alt = pathinfo(basename($url), PATHINFO_FILENAME);
+                    $alt = str_replace(['-', '_'], ' ', $alt);
+                }
+                set_transient($cache_key, $alt, DAY_IN_SECONDS);
             }
+
             $alt = esc_attr($alt);
             if (strpos($tag, 'alt=') !== false) {
                 $tag = preg_replace('/alt=["\'].*?["\']/', 'alt="'.$alt.'"', $tag);
@@ -1631,6 +1797,191 @@ add_action( 'wp_head', function () {
     @font-face { font-family: "Prompt"; font-display: swap; }
     </style>';
 }, 1 );
+
+
+function BNA_configure_smtp( $phpmailer ) {
+	if ( ! defined( 'BNA_SMTP_HOST' ) || ! defined( 'BNA_SMTP_USERNAME' ) || ! defined( 'BNA_SMTP_PASSWORD' ) ) {
+		return;
+	}
+
+	$encryption = defined( 'BNA_SMTP_ENCRYPTION' ) ? strtolower( BNA_SMTP_ENCRYPTION ) : 'tls';
+	$encryption = in_array( $encryption, array( 'tls', 'ssl' ), true ) ? $encryption : '';
+
+	$phpmailer->isSMTP();
+	$phpmailer->Host       = BNA_SMTP_HOST;
+	$phpmailer->Port       = defined( 'BNA_SMTP_PORT' ) ? (int) BNA_SMTP_PORT : 587;
+	$phpmailer->SMTPAuth   = true;
+	$phpmailer->Username   = BNA_SMTP_USERNAME;
+	$phpmailer->Password   = BNA_SMTP_PASSWORD;
+	$phpmailer->SMTPSecure = $encryption;
+	$phpmailer->SMTPAutoTLS = ( 'ssl' !== $encryption );
+
+	$from_email = defined( 'BNA_SMTP_FROM_EMAIL' ) ? BNA_SMTP_FROM_EMAIL : BNA_SMTP_USERNAME;
+	$from_name  = defined( 'BNA_SMTP_FROM_NAME' ) ? BNA_SMTP_FROM_NAME : get_bloginfo( 'name' );
+
+	if ( is_email( $from_email ) ) {
+		$phpmailer->setFrom( $from_email, $from_name, false );
+	}
+}
+add_action( 'phpmailer_init', 'BNA_configure_smtp' );
+
+
+function BNA_log_mail_failure( $error ) {
+	$message = $error->get_error_message();
+
+	error_log( 'POB SMTP error: ' . $message );
+	update_option(
+		'BNA_last_smtp_error',
+		array(
+			'message' => $message,
+			'time'    => current_time( 'mysql' ),
+		),
+		false
+	);
+}
+add_action( 'wp_mail_failed', 'BNA_log_mail_failure' );
+
+/**
+ * Clear the stored error after a successful email.
+ */
+function BNA_clear_mail_failure() {
+	delete_option( 'BNA_last_smtp_error' );
+}
+add_action( 'wp_mail_succeeded', 'BNA_clear_mail_failure' );
+
+/**
+ * Show the latest SMTP error only to administrators.
+ */
+function BNA_smtp_admin_notice() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	$error = get_option( 'BNA_last_smtp_error' );
+
+	if ( empty( $error['message'] ) ) {
+		return;
+	}
+	?>
+	<div class="notice notice-error">
+		<p>
+			<strong><?php esc_html_e( 'Last SMTP error:', 'peaks-of-the-balkans' ); ?></strong>
+			<?php echo esc_html( $error['message'] ); ?>
+			<?php if ( ! empty( $error['time'] ) ) : ?>
+				<small>(<?php echo esc_html( $error['time'] ); ?>)</small>
+			<?php endif; ?>
+		</p>
+	</div>
+	<?php
+}
+add_action( 'admin_notices', 'BNA_smtp_admin_notice' );
+
+/**
+ * Return the address that receives website contact messages.
+ */
+function BNA_get_contact_email() {
+	$email = defined( 'BNA_CONTACT_EMAIL' ) ? BNA_CONTACT_EMAIL : 'info@bnadventure.com';
+
+	return is_email( $email ) ? $email : get_option( 'admin_email' );
+}
+
+/**
+ * Redirect back to the contact form with its delivery status.
+ */
+function BNA_contact_redirect( $status ) {
+	$fallback = home_url( '/contact/' );
+	$redirect = wp_get_referer();
+	$redirect = $redirect ? $redirect : $fallback;
+	$redirect = remove_query_arg( 'contact-status', $redirect );
+
+	wp_safe_redirect( add_query_arg( 'contact-status', sanitize_key( $status ), $redirect ) . '#contact-form' );
+	exit;
+}
+
+/**
+ * Process the public contact form and send it through wp_mail().
+ */
+function BNA_handle_contact_form() {
+	if (
+		! isset( $_POST['BNA_contact_nonce'] ) ||
+		! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['BNA_contact_nonce'] ) ), 'BNA_send_contact' )
+	) {
+		BNA_contact_redirect( 'invalid' );
+	}
+
+	// Bots commonly fill fields hidden from visitors.
+	if ( ! empty( $_POST['website'] ) ) {
+		BNA_contact_redirect( 'success' );
+	}
+
+	$name    = isset( $_POST['name'] ) ? sanitize_text_field( wp_unslash( $_POST['name'] ) ) : '';
+	$surname = isset( $_POST['surname'] ) ? sanitize_text_field( wp_unslash( $_POST['surname'] ) ) : '';
+	$email   = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
+	$message = isset( $_POST['message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['message'] ) ) : '';
+
+	if ( '' === $name || '' === $surname || ! is_email( $email ) || '' === $message ) {
+		BNA_contact_redirect( 'invalid' );
+	}
+
+	$subject = sprintf(
+		/* translators: %s: contact's full name. */
+		__( 'Website enquiry from %s', 'peaks-of-the-balkans' ),
+		$name . ' ' . $surname
+	);
+	$body = sprintf(
+		"Name: %s %s\nEmail: %s\nPage: %s\n\nMessage:\n%s",
+		$name,
+		$surname,
+		$email,
+		esc_url_raw( wp_get_referer() ),
+		$message
+	);
+	$headers = array( 'Reply-To: ' . $name . ' ' . $surname . ' <' . $email . '>' );
+
+	$sent = wp_mail( BNA_get_contact_email(), $subject, $body, $headers );
+	BNA_contact_redirect( $sent ? 'success' : 'failed' );
+}
+add_action( 'admin_post_nopriv_BNA_send_contact', 'BNA_handle_contact_form' );
+add_action( 'admin_post_BNA_send_contact', 'BNA_handle_contact_form' );
+
+/**
+ * Render contact form feedback after a redirect.
+ */
+function BNA_contact_form_notice() {
+	$status = isset( $_GET['contact-status'] ) ? sanitize_key( wp_unslash( $_GET['contact-status'] ) ) : '';
+
+	if ( 'success' === $status ) {
+		return '<div class="pob-contact-form__notice pob-contact-form__notice--success" role="status">' .
+			esc_html__( 'Thank you. Your message has been sent successfully.', 'peaks-of-the-balkans' ) .
+			'</div>';
+	}
+
+	if ( 'failed' === $status ) {
+		return '<div class="pob-contact-form__notice pob-contact-form__notice--error" role="alert">' .
+			esc_html__( 'We could not send your message. Please try again or contact us by email.', 'peaks-of-the-balkans' ) .
+			'</div>';
+	}
+
+	if ( 'invalid' === $status ) {
+		return '<div class="pob-contact-form__notice pob-contact-form__notice--error" role="alert">' .
+			esc_html__( 'Please check all required fields and try again.', 'peaks-of-the-balkans' ) .
+			'</div>';
+	}
+
+	return '';
+}
+
+/**
+ * Send the footer Contact Form 7 "Chat" submissions to the SMTP inbox.
+ */
+function BNA_route_chat_form_email( $components, $contact_form ) {
+	if ( 'Chat' === $contact_form->title() ) {
+		$components['recipient'] = BNA_get_contact_email();
+	}
+
+	return $components;
+}
+add_filter( 'wpcf7_mail_components', 'BNA_route_chat_form_email', 10, 2 );
 
 
 function dergo_te_dhenat_ne_google_sheets($contact_form) {
@@ -1682,7 +2033,7 @@ function dergo_te_dhenat_ne_google_sheets($contact_form) {
         }
     }
 
-	$script_url = 'https://script.google.com/macros/s/AKfycbyJLOMCtwn3DEAsM09Ze7FPYGzT3rJtQClu4j4s91gxyWmLEZCeaeGYqindovHhf5eM/exec';
+    $script_url = 'https://script.google.com/macros/s/AKfycbyJLOMCtwn3DEAsM09Ze7FPYGzT3rJtQClu4j4s91gxyWmLEZCeaeGYqindovHhf5eM/exec';
 
     $body = [
         'Website' => $page_url,
@@ -1711,3 +2062,73 @@ function dergo_te_dhenat_ne_google_sheets($contact_form) {
 
 
 add_action('wpcf7_before_send_mail', 'dergo_te_dhenat_ne_google_sheets');
+
+add_filter( 'pll_rel_hreflang_attributes', function ( $hreflangs ) {
+	if ( ! is_array( $hreflangs ) ) {
+		return $hreflangs;
+	}
+
+	foreach ( $hreflangs as $lang => $url ) {
+		if ( is_string( $url ) && $url !== '' ) {
+			$hreflangs[ $lang ] = trailingslashit( $url );
+		}
+	}
+
+	$hreflangs['x-default'] = ! empty( $hreflangs['en'] )
+		? $hreflangs['en']
+		: bna_get_universal_home_url();
+
+	return $hreflangs;
+}, 99999 );
+
+
+add_action( 'template_redirect', function () {
+	if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+		return;
+	}
+
+	ob_start( function ( $html ) {
+		if ( ! is_string( $html ) || $html === '' ) {
+			return $html;
+		}
+
+		if ( bna_should_generate_fallback_hreflangs() ) {
+			$hreflangs = bna_get_fallback_hreflangs_for_current_request();
+			$links     = bna_render_hreflang_link_tags( $hreflangs );
+
+			if ( $links !== '' ) {
+				$html = preg_replace(
+					'/<link\b(?=[^>]*\brel\s*=\s*["\'][^"\']*\balternate\b[^"\']*["\'])(?=[^>]*\bhreflang\s*=)[^>]*>\s*/i',
+					'',
+					$html
+				);
+
+				if ( strpos( $html, '</head>' ) !== false ) {
+					return str_replace( '</head>', $links . '</head>', $html );
+				}
+			}
+		}
+
+		$en_url = null;
+		if ( preg_match( '/<link\b[^>]*hreflang\s*=\s*["\']en["\'][^>]*>/i', $html, $en_match ) ) {
+			if ( preg_match( '/href\s*=\s*["\']([^"\']+)["\']/i', $en_match[0], $href_match ) ) {
+				$en_url = trailingslashit( $href_match[1] );
+			}
+		}
+
+		$correct_url = $en_url ? $en_url : bna_get_universal_home_url();
+		$correct     = '<link rel="alternate" href="' . esc_url( $correct_url ) . '" hreflang="x-default" />';
+
+		$html = preg_replace(
+			'/<link\b[^>]*hreflang\s*=\s*["\']x-default["\'][^>]*>\s*/i',
+			'',
+			$html
+		);
+
+		if ( strpos( $html, '</head>' ) !== false ) {
+			$html = str_replace( '</head>', $correct . "\n</head>", $html );
+		}
+
+		return $html;
+	} );
+}, 1 );
