@@ -166,3 +166,14 @@
     .chat-box .wpcf7-spinner::before {
         background-color: #fff;
     }
+
+    .chat-content .wpcf7-form input[type="text"]:focus-visible,
+    .chat-content .wpcf7-form input[type="email"]:focus-visible,
+    .chat-content .wpcf7-form textarea:focus-visible {
+        border-color: #0078FF;
+        box-shadow: 0 0 0 3px rgba(0, 120, 255, 0.35);
+    }
+    .chat-content .wpcf7-form input[type="submit"]:focus-visible {
+        outline: 3px solid #005fc1;
+        outline-offset: 2px;
+    }

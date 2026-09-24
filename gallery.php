@@ -39,7 +39,10 @@
             if ($cpt_query->have_posts()) : while ($cpt_query->have_posts()) : $cpt_query->the_post();
         ?>
             <div class="gallery-box">
-                <img src="<?php the_post_thumbnail_url(); ?>" alt="">
+                <?php
+                    $thumbnail_id = get_post_thumbnail_id( get_the_ID() );
+                    echo wp_get_attachment_image( $thumbnail_id, 'full' );
+                ?>
                 <a class="about-gallery" href="<?php echo esc_url(get_the_permalink()); ?>">
                     <h4><?php the_title(); ?></h4>
                 </a>
@@ -52,16 +55,31 @@
             endif;
         ?>
     </div>
-	<nav class= "pagination">             
+	<nav class= "pagination">
         <?php
-             echo paginate_links( array(
+             $pagination_links = paginate_links( array(
                  'format'  => 'page/%#%',
                  'current' => $paged,
                  'total'   => $cpt_query->max_num_pages,
                  'mid_size'        => 2,
                  'prev_text'       => __('<'),
-                 'next_text'       => __('>')
+                 'next_text'       => __('>'),
+                 'type'            => 'array',
               ) );
+
+             if ( $pagination_links ) {
+                 foreach ( $pagination_links as $pagination_link ) {
+                     if ( strpos( $pagination_link, 'aria-current="page"' ) !== false ) {
+                         $pagination_link = sprintf(
+                             '<a aria-current="page" class="page-numbers current" href="%s">%s</a>',
+                             esc_url( get_pagenum_link( $paged ) ),
+                             esc_html( $paged )
+                         );
+                     }
+
+                     echo $pagination_link;
+                 }
+             }
         ?>
     </nav>
 </div>
