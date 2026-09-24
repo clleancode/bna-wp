@@ -1074,138 +1074,61 @@ function bna_normalize_hreflang_permalink( $url ) {
 	return trailingslashit( $url );
 }
 
-function bna_get_universal_home_url() {
-	return trailingslashit( set_url_scheme( get_option( 'home' ) ) );
-}
-
 /**
- * x-default URL: always points to the universal root.
+ * x-default URL: same page in the current language (matches the URL you are on).
  *
  * @param array|null $hreflangs Optional Polylang hreflang map (lang => url).
  */
 function bna_get_hreflang_x_default_url( $hreflangs = null ) {
-	return bna_get_universal_home_url();
-}
-
-function bna_get_supported_hreflang_languages() {
-	return array(
-		'en' => array( 'prefix' => '' ),
-		'de' => array( 'prefix' => '/de' ),
-		'fr' => array( 'prefix' => '/fr' ),
-		'nl' => array( 'prefix' => '/nl' ),
-	);
-}
-
-function bna_get_current_request_path() {
-	$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
-	$path        = wp_parse_url( $request_uri, PHP_URL_PATH );
-
-	if ( ! is_string( $path ) || $path === '' ) {
-		$path = isset( $GLOBALS['wp']->request ) ? '/' . ltrim( $GLOBALS['wp']->request, '/' ) : '/';
-	}
-
-	return trailingslashit( '/' . ltrim( $path, '/' ) );
-}
-
-function bna_strip_hreflang_language_prefix( $path ) {
-	$base_path = trailingslashit( '/' . ltrim( (string) $path, '/' ) );
-
-	foreach ( bna_get_supported_hreflang_languages() as $data ) {
-		if ( empty( $data['prefix'] ) ) {
-			continue;
+	if ( is_array( $hreflangs ) ) {
+		if ( function_exists( 'pll_current_language' ) ) {
+			$lang = pll_current_language( 'slug' );
+			if ( $lang ) {
+				foreach ( array( $lang, $lang . '-' . strtoupper( $lang ) ) as $key ) {
+					if ( ! empty( $hreflangs[ $key ] ) ) {
+						return bna_normalize_hreflang_permalink( $hreflangs[ $key ] );
+					}
+				}
+			}
 		}
 
-		$prefix = trailingslashit( $data['prefix'] );
-		if ( strpos( $base_path, $prefix ) === 0 ) {
-			return trailingslashit( '/' . ltrim( substr( $base_path, strlen( $prefix ) ), '/' ) );
+		if ( ! empty( $hreflangs['en'] ) ) {
+			return bna_normalize_hreflang_permalink( $hreflangs['en'] );
 		}
 	}
 
-	return $base_path;
-}
-
-function bna_should_generate_fallback_hreflangs() {
-	if ( is_admin() || wp_doing_ajax() || is_feed() || is_search() || is_404() ) {
-		return false;
+	if ( ! function_exists( 'pll_get_post' ) ) {
+		return null;
 	}
 
-	if ( is_paged() || is_archive() || is_category() || is_tag() || is_tax() || is_post_type_archive() || is_singular( 'galleries' ) ) {
-		return true;
-	}
-
-	$base_path = bna_strip_hreflang_language_prefix( bna_get_current_request_path() );
-
-	if ( preg_match( '#^/(gallery|galleries|products)(/page/[0-9]+)?/$#', $base_path ) ) {
-		return true;
-	}
-
-	if ( preg_match( '#^/galleries/[^/]+/$#', $base_path ) ) {
-		return true;
-	}
-
-	if ( preg_match( '#^/(category|tag)/[^/]+(/page/[0-9]+)?/$#', $base_path ) ) {
-		return true;
-	}
-
-	return false;
-}
-
-function bna_get_fallback_hreflangs_for_current_request() {
-	$hreflangs = array();
-
-	if ( function_exists( 'pll_the_languages' ) ) {
-		$translations = pll_the_languages( array(
-			'raw'           => 1,
-			'hide_if_empty' => 0,
-		) );
-
-		if ( is_array( $translations ) ) {
-			foreach ( $translations as $lang => $data ) {
-				if ( empty( $data['url'] ) ) {
-					continue;
-				}
-
-				$normalized = bna_normalize_hreflang_permalink( $data['url'] );
-				if ( $normalized ) {
-					$hreflangs[ $lang ] = $normalized;
-				}
+	// Current language first (/fr/, /de/, /nl/, or plain EN).
+	if ( function_exists( 'pll_current_language' ) && function_exists( 'pll_translation_url' ) ) {
+		$lang = pll_current_language( 'slug' );
+		if ( $lang ) {
+			$url = pll_translation_url( $lang );
+			if ( $url ) {
+				return bna_normalize_hreflang_permalink( $url );
 			}
 		}
 	}
 
-	$base_path = bna_strip_hreflang_language_prefix( bna_get_current_request_path() );
-
-	foreach ( bna_get_supported_hreflang_languages() as $lang => $data ) {
-		if ( ! empty( $hreflangs[ $lang ] ) ) {
-			continue;
+	if ( function_exists( 'pll_translation_url' ) ) {
+		$url = pll_translation_url( 'en' );
+		if ( ! $url && function_exists( 'pll_default_language' ) ) {
+			$url = pll_translation_url( pll_default_language() );
 		}
-
-		$path = empty( $data['prefix'] ) ? $base_path : trailingslashit( $data['prefix'] . $base_path );
-		$hreflangs[ $lang ] = trailingslashit( home_url( $path ) );
-	}
-
-	return $hreflangs;
-}
-
-function bna_render_hreflang_link_tags( $hreflangs ) {
-	$html = '';
-
-	if ( ! is_array( $hreflangs ) || empty( $hreflangs ) ) {
-		return $html;
-	}
-
-	foreach ( $hreflangs as $lang => $url ) {
-		if ( ! $url || $lang === 'x-default' ) {
-			continue;
+		if ( $url ) {
+			return bna_normalize_hreflang_permalink( $url );
 		}
-
-		$html .= '<link rel="alternate" href="' . esc_url( trailingslashit( $url ) ) . '" hreflang="' . esc_attr( $lang ) . '" />' . "\n";
 	}
 
-	$x_default = ! empty( $hreflangs['en'] ) ? $hreflangs['en'] : bna_get_hreflang_x_default_url( $hreflangs );
-	$html     .= '<link rel="alternate" href="' . esc_url( trailingslashit( $x_default ) ) . '" hreflang="x-default" />' . "\n";
+	$post_id = get_queried_object_id();
 
-	return $html;
+	if ( ! $post_id ) {
+		return null;
+	}
+
+	return bna_normalize_hreflang_permalink( get_permalink( $post_id ) );
 }
 
 /**
@@ -1368,17 +1291,6 @@ function bn_fix_og_image($image) {
     );
 }
 
-// Filter Yoast Open Graph URL for paginated taxonomy archives.
-add_filter( 'wpseo_opengraph_url', function ( $url ) {
-	if ( is_paged() && ( is_category() || is_tag() || is_tax() ) ) {
-		$paged = max( 1, (int) get_query_var( 'paged' ) );
-
-		return esc_url( get_pagenum_link( $paged ) );
-	}
-
-	return $url;
-} );
-
 function bna_fix_archive_pagination_query( $query ) {
     if ( is_admin() || ! $query->is_main_query() ) {
         return;
@@ -1427,6 +1339,22 @@ add_filter('redirect_canonical', function ($redirect_url, $requested_url) {
 // add_filter('redirect_canonical', function($redirect_url) {
 //     return false;
 // });
+
+
+add_filter( 'pll_rel_hreflang_attributes', function ( $hreflangs ) {
+	if ( ! is_array( $hreflangs ) ) {
+		return $hreflangs;
+	}
+
+	$hreflangs = bna_normalize_hreflang_attributes( $hreflangs );
+
+	$x_default = bna_get_hreflang_x_default_url( $hreflangs );
+	if ( $x_default ) {
+		$hreflangs['x-default'] = $x_default;
+	}
+
+	return $hreflangs;
+}, 20 );
 
 
 function safe_mobile_image_fix($attr) {
@@ -1540,44 +1468,9 @@ add_action('init', function () {
 
 }, 0);
 
-function bna_is_nl_peaks_legacy_product_path( $url_or_path = '' ) {
-    $path = parse_url( (string) $url_or_path, PHP_URL_PATH );
-    $path = is_string( $path ) ? trailingslashit( $path ) : '';
-
-    return $path === '/nl/products/peaks-of-the-balkans-trail/';
-}
-
-add_filter( 'request', function ( $query_vars ) {
-    $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
-
-    if ( ! bna_is_nl_peaks_legacy_product_path( $request_uri ) ) {
-        return $query_vars;
-    }
-
-    $product = get_page_by_path( 'pics-van-de-balkan-trail', OBJECT, 'destination' );
-
-    if ( ! $product ) {
-        return $query_vars;
-    }
-
-    return array(
-        'post_type' => 'destination',
-        'p'         => $product->ID,
-        'lang'      => 'nl',
-    );
-}, 0 );
-
-add_filter( 'redirect_canonical', function ( $redirect_url, $requested_url ) {
-    if ( is_admin() || ! bna_is_nl_peaks_legacy_product_path( $requested_url ) ) {
-        return $redirect_url;
-    }
-
-    return false;
-}, 0, 2 );
-
 function bna_fix_redirect_chains() {
     $redirects = array(
-        '/destination/peaks-of-the-balkans-trail/'                          => '/peaks-of-the-balkans-eng/',
+        '/destination/peaks-of-the-balkans-trail/'                          => '/peaks-of-the-balkans/',
         '/products/via-ferrata-mat-and-ari/'                                => '/products/onvia-ferrata-mat-en-ari/',
         '/products/guided-high-scardus-2024/'                               => '/products/guided-high-scardus-2026/',
         '/nl/products/via-ferrata-mat-and-ari-2/'                           => '/nl/products/ontdek-via-ferrata-mat-en-ari/',
@@ -1595,23 +1488,45 @@ function bna_fix_redirect_chains() {
 add_action( 'template_redirect', 'bna_fix_redirect_chains' );
 
 
-/**
- * BNA Hreflang Generator - fallback for archives and paginated pages.
- */
-function bna_generate_hreflang_tags() {
-	if ( ! bna_should_generate_fallback_hreflangs() ) {
-		return;
+add_filter( 'wpseo_hreflang_output', function ( $output ) {
+	$parsed_hreflangs = array();
+
+	if ( preg_match_all( '/<link rel="alternate" href="([^"]+)" hreflang="([a-z]{2}(?:-[A-Za-z]+)?)" \/>/i', $output, $matches, PREG_SET_ORDER ) ) {
+		foreach ( $matches as $match ) {
+			$parsed_hreflangs[ $match[2] ] = $match[1];
+		}
 	}
 
-	$hreflangs = bna_get_fallback_hreflangs_for_current_request();
+	$x_default = bna_get_hreflang_x_default_url( $parsed_hreflangs );
 
-	if ( empty( $hreflangs ) ) {
-		return;
+	if ( ! $x_default && function_exists( 'pll_current_language' ) ) {
+		$lang = pll_current_language( 'slug' );
+		if ( $lang && ! empty( $parsed_hreflangs[ $lang ] ) ) {
+			$x_default = $parsed_hreflangs[ $lang ];
+		}
 	}
 
-	echo bna_render_hreflang_link_tags( $hreflangs );
-}
-add_action( 'wp_head', 'bna_generate_hreflang_tags', 5 );
+	if ( ! $x_default && ! empty( $parsed_hreflangs['en'] ) ) {
+		$x_default = $parsed_hreflangs['en'];
+	}
+
+	$x_default = bna_normalize_hreflang_permalink( $x_default );
+
+	if ( ! $x_default ) {
+		return $output;
+	}
+
+	$output = preg_replace(
+		'/<link rel="alternate" href="[^"]+" hreflang="x-default"[^>]*\/?>/i',
+		'',
+		$output
+	);
+
+	$output .= "\n" . '<link rel="alternate" href="' . esc_url( $x_default ) . '" hreflang="x-default" />';
+
+	return $output;
+}, 99 );
+
 
 add_action('template_redirect', function () {
 
@@ -1644,12 +1559,10 @@ add_action('template_redirect', function () {
     if (is_admin() || wp_doing_ajax()) return;
 
     $uri = $_SERVER['REQUEST_URI'] ?? '';
-    $path = parse_url( $uri, PHP_URL_PATH );
-    $path = is_string( $path ) ? trailingslashit( $path ) : '';
 
-    if ( $path === '/products/peaks-of-the-balkans-trail/' ) {
+    if (strpos($uri, '/products/peaks-of-the-balkans-trail/') !== false) {
 
-        $target = home_url('/peaks-of-the-balkans-eng/');
+        $target = home_url('/peaks-of-the-balkans/');
 
         if (!defined('DONOTCACHEPAGE')) {
             define('DONOTCACHEPAGE', true);
@@ -1769,25 +1682,14 @@ add_action('template_redirect', function () {
             }
             if (!preg_match('/src=["\']([^"\']+)["\']/', $tag, $src)) return $tag;
             $url = $src[1];
-
-            // Cache the resolved alt per image URL so we don't hit
-            // attachment_url_to_postid() (slow LIKE query) + get_post_meta()
-            // on every single page load for every image.
-            $cache_key = 'bna_img_alt_' . md5($url);
-            $alt = get_transient($cache_key);
-
-            if (false === $alt) {
-                $id = attachment_url_to_postid($url);
-                if ($id) {
-                    $alt = get_post_meta($id, '_wp_attachment_image_alt', true);
-                    if (!$alt) $alt = get_the_title($id);
-                } else {
-                    $alt = pathinfo(basename($url), PATHINFO_FILENAME);
-                    $alt = str_replace(['-', '_'], ' ', $alt);
-                }
-                set_transient($cache_key, $alt, DAY_IN_SECONDS);
+            $id  = attachment_url_to_postid($url);
+            if ($id) {
+                $alt = get_post_meta($id, '_wp_attachment_image_alt', true);
+                if (!$alt) $alt = get_the_title($id);
+            } else {
+                $alt = pathinfo(basename($url), PATHINFO_FILENAME);
+                $alt = str_replace(['-', '_'], ' ', $alt);
             }
-
             $alt = esc_attr($alt);
             if (strpos($tag, 'alt=') !== false) {
                 $tag = preg_replace('/alt=["\'].*?["\']/', 'alt="'.$alt.'"', $tag);
@@ -2072,73 +1974,3 @@ function dergo_te_dhenat_ne_google_sheets($contact_form) {
 
 
 add_action('wpcf7_before_send_mail', 'dergo_te_dhenat_ne_google_sheets');
-
-add_filter( 'pll_rel_hreflang_attributes', function ( $hreflangs ) {
-	if ( ! is_array( $hreflangs ) ) {
-		return $hreflangs;
-	}
-
-	foreach ( $hreflangs as $lang => $url ) {
-		if ( is_string( $url ) && $url !== '' ) {
-			$hreflangs[ $lang ] = trailingslashit( $url );
-		}
-	}
-
-	$hreflangs['x-default'] = ! empty( $hreflangs['en'] )
-		? $hreflangs['en']
-		: bna_get_universal_home_url();
-
-	return $hreflangs;
-}, 99999 );
-
-
-add_action( 'template_redirect', function () {
-	if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
-		return;
-	}
-
-	ob_start( function ( $html ) {
-		if ( ! is_string( $html ) || $html === '' ) {
-			return $html;
-		}
-
-		if ( bna_should_generate_fallback_hreflangs() ) {
-			$hreflangs = bna_get_fallback_hreflangs_for_current_request();
-			$links     = bna_render_hreflang_link_tags( $hreflangs );
-
-			if ( $links !== '' ) {
-				$html = preg_replace(
-					'/<link\b(?=[^>]*\brel\s*=\s*["\'][^"\']*\balternate\b[^"\']*["\'])(?=[^>]*\bhreflang\s*=)[^>]*>\s*/i',
-					'',
-					$html
-				);
-
-				if ( strpos( $html, '</head>' ) !== false ) {
-					return str_replace( '</head>', $links . '</head>', $html );
-				}
-			}
-		}
-
-		$en_url = null;
-		if ( preg_match( '/<link\b[^>]*hreflang\s*=\s*["\']en["\'][^>]*>/i', $html, $en_match ) ) {
-			if ( preg_match( '/href\s*=\s*["\']([^"\']+)["\']/i', $en_match[0], $href_match ) ) {
-				$en_url = trailingslashit( $href_match[1] );
-			}
-		}
-
-		$correct_url = $en_url ? $en_url : bna_get_universal_home_url();
-		$correct     = '<link rel="alternate" href="' . esc_url( $correct_url ) . '" hreflang="x-default" />';
-
-		$html = preg_replace(
-			'/<link\b[^>]*hreflang\s*=\s*["\']x-default["\'][^>]*>\s*/i',
-			'',
-			$html
-		);
-
-		if ( strpos( $html, '</head>' ) !== false ) {
-			$html = str_replace( '</head>', $correct . "\n</head>", $html );
-		}
-
-		return $html;
-	} );
-}, 1 );
