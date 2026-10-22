@@ -107,15 +107,17 @@
             class="chat-button"
             aria-label="Chat now"
             title="Chat now"
+            aria-expanded="false"
+            aria-controls="chatBox"
         >
             <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24" style="display: block; fill: #fff;">
                 <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"></path>
             </svg>
             <span>Contact us</span>
         </button>
-        <div class="chat-box" id="chatBox">
+        <div class="chat-box" id="chatBox" role="region" aria-labelledby="chatPanelTitle" hidden>
             <div class="chat-header">
-                <span>Contact us</span>
+                <span id="chatPanelTitle">Contact us</span>
                 <button type="button" class="chat-close" id="chatCloseBtn" aria-label="Close chat" title="Close chat">&minus;</button>
             </div>
             <div class="chat-content">
@@ -130,20 +132,50 @@
             const chatBox = document.getElementById('chatBox');
             const closeBtn = document.getElementById('chatCloseBtn');
 
-            chatBtn.addEventListener('click', function() {
+            if (!chatBtn || !chatBox || !closeBtn) {
+                return;
+            }
+
+            function openChat() {
+                chatBox.hidden = false;
                 chatBox.classList.add('active');
-            });
+                chatBtn.setAttribute('aria-expanded', 'true');
+                closeBtn.focus();
+            }
 
-            closeBtn.addEventListener('click', function(e) {
+            function closeChat(returnFocus) {
+                const focusWasInPanel = chatBox.contains(document.activeElement);
                 chatBox.classList.remove('active');
+                chatBox.hidden = true;
+                chatBtn.setAttribute('aria-expanded', 'false');
+
+                if (returnFocus || focusWasInPanel) {
+                    chatBtn.focus();
+                }
+            }
+
+            chatBtn.addEventListener('click', function() {
+                if (chatBox.hidden) {
+                    openChat();
+                } else {
+                    closeChat(false);
+                }
             });
 
-            // Optional: Close chat-box when clicking outside
+            closeBtn.addEventListener('click', function() {
+                closeChat(true);
+            });
+
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && !chatBox.hidden) {
+                    event.preventDefault();
+                    closeChat(true);
+                }
+            });
+
             document.addEventListener('click', function(e) {
-                if (chatBox.classList.contains('active')) {
-                    if (!chatBox.contains(e.target) && !chatBtn.contains(e.target)) {
-                        chatBox.classList.remove('active');
-                    }
+                if (!chatBox.hidden && !chatBox.contains(e.target) && !chatBtn.contains(e.target)) {
+                    closeChat(false);
                 }
             });
         });
