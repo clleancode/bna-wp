@@ -675,6 +675,32 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 
 	add_action('acf/init', 'acf_content_block');
 
+	/**
+	 * Custom code can execute JavaScript, so only users trusted to save
+	 * unfiltered HTML may edit or save this field.
+	 */
+	function bna_prepare_custom_code_field( $field ) {
+		if ( ! current_user_can( 'unfiltered_html' ) ) {
+			return false;
+		}
+
+		return $field;
+	}
+	add_filter( 'acf/prepare_field/name=custom_code', 'bna_prepare_custom_code_field' );
+
+	function bna_validate_custom_code_field( $valid, $value, $field, $input ) {
+		if ( $valid !== true ) {
+			return $valid;
+		}
+
+		if ( ! current_user_can( 'unfiltered_html' ) ) {
+			return __( 'You are not allowed to edit custom code.', 'balkan-nature-adventure' );
+		}
+
+		return $valid;
+	}
+	add_filter( 'acf/validate_value/name=custom_code', 'bna_validate_custom_code_field', 10, 4 );
+
 
 	/**
 	 * Language Strings

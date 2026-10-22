@@ -78,7 +78,9 @@
             <div class="service--box-top">
                 <img src="<?php echo get_template_directory_uri(); ?>/assets/img/pics/naturee.jpg" alt="">
                 <div class="overlay">
-                    <span class="icon-up-right" aria-hidden="true"></span>
+                    <a href="#">
+                         <span class="icon-up-right"></span>
+                    </a>
                 </div>
             </div>
             <div class="service--box-bottom">
@@ -98,7 +100,9 @@
             <div class="service--box-top">
                 <img src="<?php echo get_template_directory_uri(); ?>/assets/img/pics/naturee.jpg" alt="">
                 <div class="overlay">
-                    <span class="icon-up-right" aria-hidden="true"></span>
+                    <a href="#">
+                         <span class="icon-up-right"></span>
+                    </a>
                 </div>
             </div>
             <div class="service--box-bottom">
@@ -118,7 +122,9 @@
             <div class="service--box-top">
                 <img src="<?php echo get_template_directory_uri(); ?>/assets/img/pics/naturee.jpg" alt="">
                 <div class="overlay">
-                    <span class="icon-up-right" aria-hidden="true"></span>
+                    <a href="#">
+                         <span class="icon-up-right"></span>
+                    </a>
                 </div>
             </div>
             <div class="service--box-bottom">
