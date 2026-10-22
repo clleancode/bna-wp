@@ -2018,79 +2018,97 @@ function BNA_route_chat_form_email( $components, $contact_form ) {
 add_filter( 'wpcf7_mail_components', 'BNA_route_chat_form_email', 10, 2 );
 
 
-function dergo_te_dhenat_ne_google_sheets($contact_form) {
+function dergo_te_dhenat_ne_google_sheets( $contact_form ) {
 
-    if ((int) $contact_form->id() !== 7071) {
+    if ( (int) $contact_form->id() !== 7071 ) {
+        return;
+    }
+
+    if ( ! defined( 'BNA_GAS_SCRIPT_URL' ) || empty( BNA_GAS_SCRIPT_URL ) ) {
+        error_log( 'BNA: BNA_GAS_SCRIPT_URL is not defined in wp-config.php. Google Sheets integration skipped.' );
         return;
     }
 
     $submission = WPCF7_Submission::get_instance();
-    if (!$submission) {
+    if ( ! $submission ) {
         return;
     }
 
     $data = $submission->get_posted_data();
 
-    $website = parse_url(home_url(), PHP_URL_HOST);
     $page_url = wp_get_referer();
+    if ( empty( $page_url ) ) {
+        $page_url = home_url( add_query_arg( [], $GLOBALS['wp']->request ) );
+    }
+    $page_url = esc_url_raw( $page_url );
 
-	if (empty($page_url)) {
-		$page_url = home_url(add_query_arg([], $GLOBALS['wp']->request));
-	}
+    // Sanitize IP: use REMOTE_ADDR only — ignoring X-Forwarded-For prevents spoofing.
+    $ip_raw     = isset( $_SERVER['REMOTE_ADDR'] ) ? wp_unslash( $_SERVER['REMOTE_ADDR'] ) : '';
+    $ip_address = sanitize_text_field( trim( $ip_raw ) );
 
-    $ip_address = $_SERVER['REMOTE_ADDR'] ?? '';
-    $ip_address = trim($ip_address);
-
-    if (filter_var($ip_address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-        $parts = explode('.', $ip_address);
+    if ( filter_var( $ip_address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
+        $parts    = explode( '.', $ip_address );
         $parts[3] = '0';
-        $ip_address = implode('.', $parts);
+        $ip_address = implode( '.', $parts );
     }
 
-    $country = '';
+    $country  = '';
+    $is_local = in_array( $ip_raw, [ '127.0.0.1', '::1', '' ], true );
 
-    if (!empty($ip_address) && !in_array($ip_address, ['127.0.0.1', '::1'], true)) {
+    if ( ! $is_local && ! empty( $ip_address ) ) {
+        $transient_key = 'bna_geo_' . md5( $ip_address );
+        $cached        = get_transient( $transient_key );
 
-        $geo = wp_remote_get(
-            "https://ipwho.is/{$ip_address}",
-            [
-                'timeout' => 5,
-            ]
-        );
+        if ( $cached !== false ) {
+            $country = (string) $cached;
+        } else {
+            $geo = wp_remote_get(
+                'https://ipwho.is/' . rawurlencode( $ip_address ),
+                [
+                    'timeout'    => 5,
+                    'user-agent' => 'BNA-Theme/1.0 (contact-form)',
+                    'sslverify'  => true,
+                ]
+            );
 
-        if (!is_wp_error($geo)) {
-            $geo_body = json_decode(wp_remote_retrieve_body($geo), true);
+            if ( ! is_wp_error( $geo ) && wp_remote_retrieve_response_code( $geo ) === 200 ) {
+                $geo_body = json_decode( wp_remote_retrieve_body( $geo ), true );
 
-            if (!empty($geo_body['success'])) {
-                $country = sanitize_text_field($geo_body['country'] ?? '');
+                if ( ! empty( $geo_body['success'] ) && isset( $geo_body['country'] ) ) {
+                    $country = sanitize_text_field( $geo_body['country'] );
+                    set_transient( $transient_key, $country, HOUR_IN_SECONDS );
+                }
             }
         }
     }
 
-    $script_url = 'https://script.google.com/macros/s/AKfycbyJLOMCtwn3DEAsM09Ze7FPYGzT3rJtQClu4j4s91gxyWmLEZCeaeGYqindovHhf5eM/exec';
-
     $body = [
-        'Website' => $page_url,
-        'Emri'     => sanitize_text_field($data['your-name'] ?? ''),
-        'Email'    => sanitize_email($data['your-email'] ?? ''),
-        'Mesazhi'  => sanitize_textarea_field($data['your-message'] ?? ''),
-        'IP'       => $ip_address,
-        'Shteti'   => $country,
-        'Koha'     => current_time('Y-m-d H:i:s'),
+        'Website' => esc_url_raw( home_url() ),
+        'Faqja'   => $page_url,
+        'Emri'    => sanitize_text_field(     $data['your-name']    ?? '' ),
+        'Email'   => sanitize_email(          $data['your-email']   ?? '' ),
+        'Mesazhi' => sanitize_textarea_field( $data['your-message'] ?? '' ),
+        'IP'      => $ip_address,
+        'Shteti'  => $country,
+        'Koha'    => current_time( 'Y-m-d H:i:s' ),
     ];
 
     $response = wp_remote_post(
-        $script_url,
+        BNA_GAS_SCRIPT_URL,
         [
-            'body'    => $body,
-            'timeout' => 15,
+            'body'      => $body,
+            'timeout'   => 15,
+            'sslverify' => true,
         ]
     );
 
-    if (is_wp_error($response)) {
-        error_log('GAS ERROR: ' . $response->get_error_message());
+    if ( is_wp_error( $response ) ) {
+        error_log( 'BNA GAS ERROR: ' . $response->get_error_message() );
     } else {
-        error_log('GAS RESPONSE: ' . wp_remote_retrieve_body($response));
+        $code = wp_remote_retrieve_response_code( $response );
+        if ( $code !== 200 ) {
+            error_log( 'BNA GAS: unexpected HTTP status ' . $code );
+        }
     }
 }
 
