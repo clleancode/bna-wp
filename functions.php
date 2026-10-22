@@ -1821,6 +1821,47 @@ add_action('template_redirect', function () {
             return $tag;
         }, $html);
 
+        if ( is_front_page() || is_page( 'product' ) || ( is_singular( 'product' ) && is_single( 'tour-peaks-of-the-balkans-trail' ) ) ) {
+            $html = preg_replace_callback('/<a\b[^>]*>.*?<\/a\s*>/is', static function ( $link ) {
+                $link_text = preg_replace('/<img\b[^>]*>/i', '', $link[0]);
+                $link_text = trim( preg_replace('/\s+/', ' ', wp_strip_all_tags( $link_text ) ) );
+                if ( $link_text === '' ) {
+                    return $link[0];
+                }
+
+                return preg_replace_callback('/<img\b[^>]*>/i', static function ( $image ) {
+                    $tag = $image[0];
+                    if ( ! preg_match('/\balt=["\']([^"\']*)["\']/', $tag, $alt_match ) ) {
+                        return $tag;
+                    }
+
+                    $alt = trim( html_entity_decode( $alt_match[1], ENT_QUOTES, 'UTF-8' ) );
+                    $is_placeholder = ctype_digit( $alt )
+                        || preg_match('/^home$/i', $alt)
+                        || preg_match('/^BNA[_ -]?\d+/i', $alt)
+                        || preg_match('/\.(?:jpe?g|png|gif|webp|avif|svg)$/i', $alt)
+                        || stripos( $alt, 'balkan natural adventure' ) !== false
+                        || stripos( $alt, 'experience the beauty, culture, and adventure' ) !== false;
+
+                    if ( ! $is_placeholder ) {
+                        return $tag;
+                    }
+
+                    return preg_replace('/\balt=["\'][^"\']*["\']/', 'alt=""', $tag, 1);
+                }, $link[0] );
+            }, $html);
+        }
+
+        if ( is_singular( 'product' ) && is_single( 'tour-peaks-of-the-balkans-trail' ) ) {
+            $html = preg_replace_callback('/<img\b[^>]*>/i', static function ( $image ) {
+                $tag = $image[0];
+                if ( preg_match('/\balt=["\'](\d+)["\']/', $tag ) ) {
+                    return preg_replace('/\balt=["\']\d+["\']/', 'alt="' . esc_attr( wp_strip_all_tags( get_the_title() ) ) . '"', $tag, 1);
+                }
+                return $tag;
+            }, $html);
+        }
+
         return $html;
     });
 });
