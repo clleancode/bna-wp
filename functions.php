@@ -1860,6 +1860,20 @@ function BNA_configure_smtp( $phpmailer ) {
 add_action( 'phpmailer_init', 'BNA_configure_smtp' );
 
 
+function bna_remove_company_reviews_from_tour_page( $content ) {
+	if ( ! is_singular() || 'tour-peaks-of-the-balkans-trail' !== get_post_field( 'post_name', get_queried_object_id() ) ) {
+		return $content;
+	}
+
+	return preg_replace(
+		'~<script\b(?=[^>]*\bsrc=["\']https://cdn\.trustindex\.io/loader\.js\?7755bb359e4f22511286327f8d9["\'])[^>]*>\s*</script>~i',
+		'',
+		$content
+	);
+}
+add_filter( 'the_content', 'bna_remove_company_reviews_from_tour_page', 20 );
+
+
 function BNA_log_mail_failure( $error ) {
 	$message = $error->get_error_message();
 
