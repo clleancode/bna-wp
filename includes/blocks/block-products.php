@@ -86,9 +86,12 @@
                     $booking_price = get_field('booking_price', get_the_ID());
 
                     if ($booking_price) :
+                        $booking_label = function_exists('pll__')
+                            ? pll__('Book Now')
+                            : __('Book Now', 'balkan-nature-adventure');
                 ?>
                     <span class="btn btn-green">
-                        Book Now - <?php echo esc_html($booking_price); ?>
+                        <?php echo esc_html($booking_label); ?> - <?php echo esc_html($booking_price); ?>
                     </span>
                 <?php endif; ?>
 
