@@ -46,7 +46,7 @@
                         <?php
                             if(get_field('facebook_url', 'options')):
                         ?>	
-                            <a href="<?php the_field('facebook_url', 'options'); ?>" target="_blank" rel="noopener" aria-label="Facebook Link"><span class="icon-social-facebook"></span></a>
+                            <a href="<?php echo esc_url( get_field('facebook_url', 'options') ); ?>" target="_blank" rel="noopener" aria-label="Facebook Link"><span class="icon-social-facebook"></span></a>
                             
                         <?php
                             endif;
@@ -54,7 +54,7 @@
                             if(get_field('twitter_url', 'options')):
                         ?>
     
-                            <a href="<?php the_field('twitter_url', 'options'); ?>" target="_blank" rel="noopener" aria-label="Twitter Link"><span class="icon-twitter"></span></a>
+                            <a href="<?php echo esc_url( get_field('twitter_url', 'options') ); ?>" target="_blank" rel="noopener" aria-label="Twitter Link"><span class="icon-twitter"></span></a>
                             
                         <?php
                             endif;
@@ -62,13 +62,13 @@
                             if(get_field('instagram_url', 'options')):
                         ?>
     
-                            <a href="<?php the_field('instagram_url', 'options'); ?>" target="_blank" rel="noopener" aria-label="Instagram Link"><span class="icon-instagram"></span></a>
+                            <a href="<?php echo esc_url( get_field('instagram_url', 'options') ); ?>" target="_blank" rel="noopener" aria-label="Instagram Link"><span class="icon-instagram"></span></a>
                             
                         <?php
                             endif;
                             if(get_field('linkedin_url', 'options')):
                         ?>
-                            <a href="<?php the_field('linkedin_url', 'options'); ?>" target="_blank" rel="noopener" aria-label="Linkedin Link"><span class="icon-linkedin2"></span></a>
+                            <a href="<?php echo esc_url( get_field('linkedin_url', 'options') ); ?>" target="_blank" rel="noopener" aria-label="Linkedin Link"><span class="icon-linkedin2"></span></a>
                             
                         <?php
                             endif;
@@ -81,7 +81,7 @@
                         <p><?php the_sub_field('headlines', 'option'); ?></p>
                         <ul>
                             <?php while(have_rows('pages_link', 'option')): the_row(); $numberOfSlides++; ?>
-                                <li><a href="<?php the_sub_field('page_link', 'option'); ?>"><?php the_sub_field('page_title', 'option'); ?></a></li>
+                                <li><a href="<?php echo esc_url( get_sub_field('page_link', 'option') ); ?>"><?php echo esc_html( get_sub_field('page_title', 'option') ); ?></a></li>
                             <?php endwhile; ?> 
                         </ul>
                     </div>
@@ -94,7 +94,7 @@
                 <?php the_field('copyright', 'option'); ?>
                 <div class="footer-bottom--left">
                     <?php while(have_rows('site_links', 'option')): the_row(); $numberOfSlides++; ?>
-                        <a href="<?php the_sub_field('site_link', 'option'); ?>"><?php the_sub_field('site_title', 'option'); ?></a>
+                        <a href="<?php echo esc_url( get_sub_field('site_link', 'option') ); ?>"><?php echo esc_html( get_sub_field('site_title', 'option') ); ?></a>
                     <?php endwhile; ?> 
                     
                 </div>
