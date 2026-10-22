@@ -2018,80 +2018,120 @@ function BNA_route_chat_form_email( $components, $contact_form ) {
 add_filter( 'wpcf7_mail_components', 'BNA_route_chat_form_email', 10, 2 );
 
 
-function dergo_te_dhenat_ne_google_sheets($contact_form) {
 
-    if ((int) $contact_form->id() !== 7071) {
-        return;
-    }
+function BNA_is_spam_message( string $message ): bool {
+	$spam_patterns = [
+		'casino', 'viagra', 'cialis', 'crypto', 'bitcoin', 'SEO', 'backlink',
+		'cheap loan', 'make money', 'click here', 'earn \$', 'free offer',
+		'buy now', 'order now', 'limited time', 'act now',
+	];
 
-    $submission = WPCF7_Submission::get_instance();
-    if (!$submission) {
-        return;
-    }
-
-    $data = $submission->get_posted_data();
-
-    $website = parse_url(home_url(), PHP_URL_HOST);
-    $page_url = wp_get_referer();
-
-	if (empty($page_url)) {
-		$page_url = home_url(add_query_arg([], $GLOBALS['wp']->request));
+	$lower = strtolower( $message );
+	foreach ( $spam_patterns as $pattern ) {
+		if ( str_contains( $lower, strtolower( $pattern ) ) ) {
+			return true;
+		}
 	}
 
-    $ip_address = $_SERVER['REMOTE_ADDR'] ?? '';
-    $ip_address = trim($ip_address);
+	return false;
+}
 
-    if (filter_var($ip_address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-        $parts = explode('.', $ip_address);
-        $parts[3] = '0';
-        $ip_address = implode('.', $parts);
-    }
+function dergo_te_dhenat_ne_google_sheets( $contact_form ) {
 
-    $country = '';
+	if ( (int) $contact_form->id() !== 7071 ) {
+		return;
+	}
 
-    if (!empty($ip_address) && !in_array($ip_address, ['127.0.0.1', '::1'], true)) {
+	$submission = WPCF7_Submission::get_instance();
+	if ( ! $submission ) {
+		return;
+	}
 
-        $geo = wp_remote_get(
-            "https://ipwho.is/{$ip_address}",
-            [
-                'timeout' => 5,
-            ]
-        );
+	$data = $submission->get_posted_data();
 
-        if (!is_wp_error($geo)) {
-            $geo_body = json_decode(wp_remote_retrieve_body($geo), true);
+	$raw_ip        = isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+	$rate_key      = 'bna_cf7_rate_' . md5( $raw_ip );
+	$submit_count  = (int) get_transient( $rate_key );
 
-            if (!empty($geo_body['success'])) {
-                $country = sanitize_text_field($geo_body['country'] ?? '');
-            }
-        }
-    }
+	if ( $submit_count >= 5 ) {
+		error_log( 'BNA: CF7 rate limit reached for IP ' . $raw_ip );
+		$submission->set_status( 'spam' );
+		return;
+	}
 
-    $script_url = 'https://script.google.com/macros/s/AKfycbyJLOMCtwn3DEAsM09Ze7FPYGzT3rJtQClu4j4s91gxyWmLEZCeaeGYqindovHhf5eM/exec';
+	set_transient( $rate_key, $submit_count + 1, 10 * MINUTE_IN_SECONDS );
 
-    $body = [
-        'Website' => $page_url,
-        'Emri'     => sanitize_text_field($data['your-name'] ?? ''),
-        'Email'    => sanitize_email($data['your-email'] ?? ''),
-        'Mesazhi'  => sanitize_textarea_field($data['your-message'] ?? ''),
-        'IP'       => $ip_address,
-        'Shteti'   => $country,
-        'Koha'     => current_time('Y-m-d H:i:s'),
-    ];
+	$message_raw = $data['your-message'] ?? '';
+	if ( BNA_is_spam_message( $message_raw ) ) {
+		error_log( 'BNA: CF7 spam keyword detected.' );
+		$submission->set_status( 'spam' );
+		return;
+	}
 
-    $response = wp_remote_post(
-        $script_url,
-        [
-            'body'    => $body,
-            'timeout' => 15,
-        ]
-    );
+	$email_raw = sanitize_email( $data['your-email'] ?? '' );
+	if ( ! is_email( $email_raw ) ) {
+		$submission->set_status( 'spam' );
+		return;
+	}
 
-    if (is_wp_error($response)) {
-        error_log('GAS ERROR: ' . $response->get_error_message());
-    } else {
-        error_log('GAS RESPONSE: ' . wp_remote_retrieve_body($response));
-    }
+	$page_url = wp_get_referer();
+	if ( empty( $page_url ) ) {
+		$page_url = home_url( add_query_arg( [], $GLOBALS['wp']->request ) );
+	}
+
+	$ip_address = $raw_ip;
+
+	if ( filter_var( $ip_address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
+		$parts    = explode( '.', $ip_address );
+		$parts[3] = '0';
+		$ip_address = implode( '.', $parts );
+	}
+
+	$country  = '';
+	$is_local = in_array( $raw_ip, [ '127.0.0.1', '::1', '' ], true );
+
+	if ( ! $is_local && ! empty( $ip_address ) ) {
+		$geo = wp_remote_get(
+			'https://ipwho.is/' . rawurlencode( $ip_address ),
+			[
+				'timeout' => 5,
+			]
+		);
+
+		if ( ! is_wp_error( $geo ) ) {
+			$geo_body = json_decode( wp_remote_retrieve_body( $geo ), true );
+
+			if ( ! empty( $geo_body['success'] ) ) {
+				$country = sanitize_text_field( $geo_body['country'] ?? '' );
+			}
+		}
+	}
+
+	$script_url = 'https://script.google.com/macros/s/AKfycbyJLOMCtwn3DEAsM09Ze7FPYGzT3rJtQClu4j4s91gxyWmLEZCeaeGYqindovHhf5eM/exec';
+
+	$body = [
+		'Website' => esc_url_raw( $page_url ),
+		'Emri'    => sanitize_text_field( $data['your-name'] ?? '' ),
+		'Email'   => $email_raw,
+		'Mesazhi' => sanitize_textarea_field( $message_raw ),
+		'IP'      => $ip_address,
+		'Shteti'  => $country,
+		'Koha'    => current_time( 'Y-m-d H:i:s' ),
+	];
+
+	$response = wp_remote_post(
+		$script_url,
+		[
+			'body'    => $body,
+			'timeout' => 15,
+		]
+	);
+
+	if ( is_wp_error( $response ) ) {
+		error_log( 'GAS ERROR: ' . $response->get_error_message() );
+	} else {
+		error_log( 'GAS RESPONSE: ' . wp_remote_retrieve_body( $response ) );
+	}
 }
 
 
