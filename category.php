@@ -59,7 +59,7 @@
                 foreach ( array( 'other-news-from-the-region', 'peaks-of-the-balkans-blog' ) as $category_slug ) {
                     $category_term = get_term_by( 'slug', $category_slug, 'category' );
 
-                    if ( $category_term && ! is_wp_error( $category_term ) ) {
+                    if ( $category_term instanceof WP_Term ) {
                         $category_include_ids[] = (int) $category_term->term_id;
                     }
                 }
