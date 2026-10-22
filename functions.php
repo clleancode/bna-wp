@@ -1821,6 +1821,25 @@ add_action('template_redirect', function () {
             return $tag;
         }, $html);
 
+        $html = preg_replace_callback(
+            '/<(?:li|a)\b[^>]*\bclass=["\'][^"\']*\blang-item\b[^"\']*["\'][^>]*>.*?<\/(?:li|a)\s*>/is',
+            static function ( $language_item ) {
+                return preg_replace_callback(
+                    '/<img\b[^>]*>/i',
+                    static function ( $image ) {
+                        $tag = $image[0];
+                        if ( preg_match( '/\balt\s*=\s*(["\']).*?\1/i', $tag ) ) {
+                            return preg_replace( '/\balt\s*=\s*(["\']).*?\1/i', 'alt=""', $tag, 1 );
+                        }
+
+                        return str_replace( '<img', '<img alt=""', $tag );
+                    },
+                    $language_item[0]
+                );
+            },
+            $html
+        );
+
         return $html;
     });
 });
