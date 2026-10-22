@@ -75,13 +75,23 @@
                         ?>
                     </div>
                 </div>
-                <?php $numberOfSlides = 0; ?>
+                    <?php $numberOfSlides = 0; ?>
                 <?php while(have_rows('footer_content', 'option')): the_row(); $numberOfSlides++; ?>
                     <div class="row">  
                         <p><?php the_sub_field('headlines', 'option'); ?></p>
                         <ul>
                             <?php while(have_rows('pages_link', 'option')): the_row(); $numberOfSlides++; ?>
-                                <li><a href="<?php echo esc_url( get_sub_field('page_link', 'option') ); ?>"><?php echo esc_html( get_sub_field('page_title', 'option') ); ?></a></li>
+                                <?php
+                                    $page_link = trim((string) get_sub_field('page_link', 'option'));
+                                    $page_title = get_sub_field('page_title', 'option');
+                                ?>
+                                <li>
+                                    <?php if ($page_link): ?>
+                                        <a href="<?php echo esc_url($page_link); ?>"><?php echo esc_html($page_title); ?></a>
+                                    <?php else: ?>
+                                        <span><?php echo esc_html($page_title); ?></span>
+                                    <?php endif; ?>
+                                </li>
                             <?php endwhile; ?> 
                         </ul>
                     </div>
@@ -94,7 +104,15 @@
                 <?php the_field('copyright', 'option'); ?>
                 <div class="footer-bottom--left">
                     <?php while(have_rows('site_links', 'option')): the_row(); $numberOfSlides++; ?>
-                        <a href="<?php echo esc_url( get_sub_field('site_link', 'option') ); ?>"><?php echo esc_html( get_sub_field('site_title', 'option') ); ?></a>
+                        <?php
+                            $site_link = trim((string) get_sub_field('site_link', 'option'));
+                            $site_title = get_sub_field('site_title', 'option');
+                        ?>
+                        <?php if ($site_link): ?>
+                            <a href="<?php echo esc_url($site_link); ?>"><?php echo esc_html($site_title); ?></a>
+                        <?php else: ?>
+                            <span><?php echo esc_html($site_title); ?></span>
+                        <?php endif; ?>
                     <?php endwhile; ?> 
                     
                 </div>
