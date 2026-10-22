@@ -1873,6 +1873,18 @@ function BNA_log_mail_failure( $error ) {
 		false
 	);
 }
+
+function bna_send_baseline_security_headers() {
+	if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) || headers_sent() ) {
+		return;
+	}
+
+	header( 'X-Content-Type-Options: nosniff' );
+	header( 'Referrer-Policy: strict-origin-when-cross-origin' );
+	header( 'Permissions-Policy: camera=(), microphone=()' );
+	header( 'X-Frame-Options: SAMEORIGIN' );
+}
+add_action( 'send_headers', 'bna_send_baseline_security_headers' );
 add_action( 'wp_mail_failed', 'BNA_log_mail_failure' );
 
 /**
