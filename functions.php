@@ -155,6 +155,35 @@ function balkan_nature_adventure_scripts() {
 }
 add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 
+/**
+ * Build share URLs from the current page's canonical URL and title.
+ *
+ * @return array<string, string>
+ */
+function bna_get_current_page_share_urls() {
+	$post_id = get_queried_object_id();
+	$canonical_url = $post_id ? wp_get_canonical_url( $post_id ) : false;
+
+	if ( ! $canonical_url && $post_id ) {
+		$canonical_url = get_permalink( $post_id );
+	}
+
+	if ( ! $canonical_url ) {
+		$request_path = isset( $GLOBALS['wp']->request ) ? $GLOBALS['wp']->request : '';
+		$canonical_url = home_url( $request_path ? trailingslashit( $request_path ) : '/' );
+	}
+
+	$page_title = $post_id ? get_the_title( $post_id ) : wp_get_document_title();
+	$encoded_url = rawurlencode( $canonical_url );
+	$encoded_title = rawurlencode( wp_strip_all_tags( $page_title ) );
+
+	return array(
+		'facebook' => 'https://www.facebook.com/sharer/sharer.php?u=' . $encoded_url,
+		'twitter'  => 'https://twitter.com/intent/tweet?url=' . $encoded_url . '&text=' . $encoded_title,
+		'linkedin' => 'https://www.linkedin.com/sharing/share-offsite/?url=' . $encoded_url,
+	);
+}
+
 	/**
 	 * Theme Settings
 	 */
