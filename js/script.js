@@ -111,6 +111,41 @@ function setContactFormPageUrl(form) {
 
 document.addEventListener('DOMContentLoaded', function () {
     setContactFormPageUrl(document);
+
+    document.addEventListener('click', function (e) {
+        var header = e.target.closest('.accordion--card-header');
+        if (!header) return;
+
+        var panelId = header.getAttribute('aria-controls');
+        var panel   = panelId ? document.getElementById(panelId) : null;
+
+        requestAnimationFrame(function () {
+            var isNowOpen = header.classList.contains('active');
+            header.setAttribute('aria-expanded', String(isNowOpen));
+
+            if (panel) {
+                if (isNowOpen) {
+                    panel.removeAttribute('hidden');
+                } else {
+                    setTimeout(function () {
+                        if (!header.classList.contains('active')) {
+                            panel.setAttribute('hidden', '');
+                        }
+                    }, 450);
+                }
+            }
+
+            document.querySelectorAll('.accordion--card-header').forEach(function (sib) {
+                if (sib === header || sib.classList.contains('active')) return;
+                sib.setAttribute('aria-expanded', 'false');
+                var sibPanelId = sib.getAttribute('aria-controls');
+                var sibPanel   = sibPanelId ? document.getElementById(sibPanelId) : null;
+                if (sibPanel) {
+                    setTimeout(function () { sibPanel.setAttribute('hidden', ''); }, 450);
+                }
+            });
+        });
+    });
 });
 
 document.addEventListener('submit', function (event) {
