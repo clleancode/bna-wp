@@ -2097,6 +2097,26 @@ function dergo_te_dhenat_ne_google_sheets($contact_form) {
 
 add_action('wpcf7_before_send_mail', 'dergo_te_dhenat_ne_google_sheets');
 
+
+add_action( 'template_redirect', function () {
+
+	$uri  = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+	$path = (string) parse_url( $uri, PHP_URL_PATH );
+	$path = trailingslashit( $path );
+
+	$legacy_slugs = [
+		'/cookie-policyyy/',
+		'/cookie-policy-2/',
+	];
+
+	if ( in_array( $path, $legacy_slugs, true ) ) {
+		wp_safe_redirect( home_url( '/cookie-policy/' ), 301 );
+		exit;
+	}
+
+}, 0 );
+
+
 add_filter( 'pll_rel_hreflang_attributes', function ( $hreflangs ) {
 	if ( ! is_array( $hreflangs ) ) {
 		return $hreflangs;
