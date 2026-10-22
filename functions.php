@@ -118,39 +118,55 @@ function balkan_nature_adventure_scripts() {
 	// );
 
 	// Scripts.
-	wp_enqueue_script( 'jquery' );
+	// jQuery v3.7.1 is provided by WordPress core — loaded automatically via dependency declarations.
 
+	// Fancybox v3.5.7 — depends on WP core jQuery.
 	wp_enqueue_script(
 		'fancybox',
 		$theme_dir_uri . '/js/fancybox.min.js',
 		array( 'jquery' ),
-		file_exists( $theme_dir . '/js/fancybox.min.js' ) ? filemtime( $theme_dir . '/js/fancybox.min.js' ) : '3.5.8',
-		true
+		file_exists( $theme_dir . '/js/fancybox.min.js' ) ? filemtime( $theme_dir . '/js/fancybox.min.js' ) : '3.5.7',
+		array(
+			'in_footer' => true,
+			'strategy'  => 'defer', // WP 6.3+ native defer
+		)
 	);
 
+	// Swiper v10.3.1 — pure vanilla JS, no jQuery dependency.
 	wp_enqueue_script(
 		'swiper',
 		$theme_dir_uri . '/js/swiper.min.js',
 		array(),
-		file_exists( $theme_dir . '/js/swiper.min.js' ) ? filemtime( $theme_dir . '/js/swiper.min.js' ) : '10.0.1',
-		true
+		file_exists( $theme_dir . '/js/swiper.min.js' ) ? filemtime( $theme_dir . '/js/swiper.min.js' ) : '10.3.1',
+		array(
+			'in_footer' => true,
+			'strategy'  => 'defer',
+		)
 	);
 
+	// Main theme script — depends on jQuery (WP core) and Fancybox.
 	wp_enqueue_script(
 		'main-js',
 		$theme_dir_uri . '/js/script.js',
-		array( 'jquery' ),
+		array( 'jquery', 'fancybox' ),
 		file_exists( $theme_dir . '/js/script.js' ) ? filemtime( $theme_dir . '/js/script.js' ) : '1.0',
-		true
+		array(
+			'in_footer' => true,
+			'strategy'  => 'defer',
+		)
 	);
 
-     wp_enqueue_script(
-         'bundle-js',
-         $theme_dir_uri . '/js/bundle.js',
-         array(),
-         filemtime($theme_dir . '/js/bundle.js'),
-         true
-     );
+	// Bundle — compiled polyfills/components.
+	wp_enqueue_script(
+		'bundle-js',
+		$theme_dir_uri . '/js/bundle.js',
+		array(),
+		file_exists( $theme_dir . '/js/bundle.js' ) ? filemtime( $theme_dir . '/js/bundle.js' ) : '1.0',
+		array(
+			'in_footer' => true,
+			'strategy'  => 'defer',
+		)
+	);
 
 }
 add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
@@ -822,7 +838,8 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 
 	add_action('parse_request', function($wp) {
 
-		$uri = $_SERVER['REQUEST_URI'];
+		$uri  = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		$path = (string) wp_parse_url( $uri, PHP_URL_PATH );
 	
 		$blocked_urls = [
 			'/de/grabbing-travel-world-headlines/',
@@ -834,7 +851,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 		];
 	
 		foreach ($blocked_urls as $bad) {
-			if (strpos($uri, $bad) !== false) {
+			if ( strpos( $path, $bad ) !== false ) {
 	
 				global $wp_query;
 				$wp_query->set_404();
@@ -919,38 +936,16 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 	    }
 	}, 100);
 
-	add_filter('the_content', function($content) {
-    if (is_admin()) return $content;
-    
-    $count = 0;
-    return preg_replace_callback('/<img\s[^>]*>/i', function ($matches) use (&$count) {
-        $img = $matches[0];
-        $count++;
-        
-        if ($count === 1) {
-            $img = preg_replace('/\sloading=["\']lazy["\']/i', '', $img);
-            return $img;
-        }
-        
-        if (strpos($img, 'loading=') !== false) return $img;
-        return preg_replace('/<img(.*?)>/i', '<img$1 loading="lazy">', $img);
-    }, $content);
-});
+	/**
+	 * WordPress >= 5.5 adds loading="lazy" to content images natively.
+	 * WordPress >= 6.3 marks the first image as fetchpriority="high" (LCP).
+	 * The manual lazy-load filter has been removed — WP handles it.
+	 */
 
-	add_filter('the_content', function($content) {
-	    if (is_admin()) return $content;
-	    return preg_replace_callback(
-	        '/<script\b([^>]*)\bsrc=["\']([^"\']+)["\']([^>]*)>(.*?)<\/script>/is',
-	        function($matches) {
-	            $script_tag = $matches[0];
-	            $src = $matches[2];
-	            if (stripos($src, 'jquery') !== false) return $script_tag;
-	            if (stripos($script_tag, 'defer') !== false) return $script_tag;
-	            return preg_replace('/<script\b/', '<script defer', $script_tag, 1);
-	        },
-	        $content
-	    );
-	});
+	/**
+	 * Script defer is handled via 'strategy' => 'defer' in wp_enqueue_script() (WP 6.3+).
+	 * The manual regex filter has been removed.
+	 */
 
 	add_filter('style_loader_src', function($src) {
 	    if (strpos($src, 'fonts.googleapis.com') !== false) {
@@ -1016,17 +1011,10 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 	//     return $metadata;
 	// }, 20, 2);
 
-	add_filter( 'script_loader_tag', function ( $tag, $handle ) {
-		if ( is_admin() ) return $tag;
-
-		$deferred_scripts = array( 'swiper', 'bundle-js', 'fancybox', 'main-js' );
-
-		if ( ! in_array( $handle, $deferred_scripts, true ) ) return $tag;
-
-		if ( false !== strpos( $tag, ' defer' ) ) return $tag;
-
-		return str_replace( '<script ', '<script defer ', $tag );
-	}, 10, 2 );
+	/**
+	 * script_loader_tag defer filter is replaced by the native 'strategy' => 'defer'
+	 * argument in wp_enqueue_script() (WP 6.3+). Filter removed to avoid duplication.
+	 */
 
 
 // add_action('wp_enqueue_scripts', function() {
@@ -1036,15 +1024,10 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 //     }
 // }, 20);
 
-add_filter( 'wp_get_attachment_image_attributes', function( $attr, $attachment ) {
-	if ( empty( $attr['alt'] ) ) {
-		$title = get_the_title( $attachment->ID );
-		if ( ! empty( $title ) ) {
-			$attr['alt'] = wp_strip_all_tags( $title );
-		}
-	}
-	return $attr;
-}, 10, 2 );
+/**
+ * Image alt-text is already handled by bna_ensure_wp_image_has_alt() below.
+ * Duplicate filter removed to avoid double execution.
+ */
 
 
 
@@ -1513,10 +1496,11 @@ add_action('wp_enqueue_scripts', function () {
 
 add_action('template_redirect', function () {
 
-    $uri = $_SERVER['REQUEST_URI'];
+    $uri  = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+    $path = (string) wp_parse_url( $uri, PHP_URL_PATH );
 
-    // 🔥 DE URL FIX
-    if (strpos($uri, '/de/products/tour-peaks-of-the-balkans-trail/') !== false) {
+    // DE URL FIX
+    if ( strpos( $path, '/de/products/tour-peaks-of-the-balkans-trail/' ) !== false ) {
 
         // ndal çdo redirect canonical të WordPress
         add_filter('redirect_canonical', '__return_false');
@@ -1527,8 +1511,8 @@ add_action('template_redirect', function () {
         return;
     }
 
-    // 🔥 NL URL FIX
-    if (strpos($uri, '/nl/products/tour-peaks-of-the-balkans-trail/') !== false) {
+    // NL URL FIX
+    if ( strpos( $path, '/nl/products/tour-peaks-of-the-balkans-trail/' ) !== false ) {
 
         add_filter('redirect_canonical', '__return_false');
 
@@ -1542,7 +1526,9 @@ add_action('template_redirect', function () {
 
 add_action('init', function () {
 
-    $uri = $_SERVER['REQUEST_URI'];
+    $uri  = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+    $path = (string) wp_parse_url( $uri, PHP_URL_PATH );
+    $path = trailingslashit( $path );
 
     $blocked = [
         '/de/peaks-of-the-balkans/peaks-of-the-balkans-map/',
@@ -1551,7 +1537,7 @@ add_action('init', function () {
 
     foreach ($blocked as $url) {
 
-        if (strpos($uri, $url) === 0) {
+        if ( strpos( $path, $url ) === 0 ) {
 
             remove_action('template_redirect', 'redirect_canonical');
             add_filter('redirect_canonical', '__return_false');
@@ -1607,11 +1593,13 @@ function bna_fix_redirect_chains() {
         '/nl/products/via-ferrata-mat-and-ari-2/'                           => '/nl/products/ontdek-via-ferrata-mat-en-ari/',
     );
 
-    $current_path = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH );
+    $uri          = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+    $current_path = (string) wp_parse_url( $uri, PHP_URL_PATH );
+    $current_path = trailingslashit( $current_path );
 
     foreach ( $redirects as $from => $to ) {
         if ( $current_path === $from ) {
-            wp_redirect( home_url( $to ), 301 );
+            wp_safe_redirect( home_url( $to ), 301 );
             exit;
         }
     }
@@ -1643,7 +1631,8 @@ add_action('template_redirect', function () {
 
     if (!is_singular()) return;
 
-    $current_url = home_url($_SERVER['REQUEST_URI']);
+    $uri         = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+    $current_url = home_url( esc_url_raw( $uri ) );
 
     if (strpos($current_url, '/de/products/peaks-of-the-balkans-trail/') === false) {
         return;
@@ -1667,8 +1656,8 @@ add_action('template_redirect', function () {
 
     if (is_admin() || wp_doing_ajax()) return;
 
-    $uri = $_SERVER['REQUEST_URI'] ?? '';
-    $path = parse_url( $uri, PHP_URL_PATH );
+    $uri  = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+    $path = wp_parse_url( $uri, PHP_URL_PATH );
     $path = is_string( $path ) ? trailingslashit( $path ) : '';
 
     if ( $path === '/products/peaks-of-the-balkans-trail/' ) {
@@ -1827,9 +1816,8 @@ add_action('template_redirect', function () {
 
 
 add_action( 'wp_head', function () {
-    echo '<style>
-    @font-face { font-family: "Prompt"; font-display: swap; }
-    </style>';
+    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static CSS string, no user data
+    echo '<style>@font-face{font-family:"Prompt";font-display:swap;}</style>' . "\n";
 }, 1 );
 
 
