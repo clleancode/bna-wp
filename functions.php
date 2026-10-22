@@ -1347,38 +1347,7 @@ function bna_add_sr_only_h2() {
 }
 add_action( 'wp_body_open', 'bna_add_sr_only_h2' );
 
-// add_action('template_redirect', function () {
-//     ob_start(function ($html) {
-//         return preg_replace_callback('/<img[^>]+>/i', function ($img) {
-//             $tag = $img[0];
-//             if (preg_match('/alt=["\'](.*?)["\']/', $tag, $m)) {
-//                 if (trim($m[1]) !== '') return $tag;
-//             }
-//             if (!preg_match('/src=["\'](.*?)["\']/', $tag, $src)) {
-//                 return $tag;
-//             }
-//             $url = $src[1];
-//             $id = attachment_url_to_postid($url);
-//             if ($id) {
-//                 $alt = get_post_meta($id, '_wp_attachment_image_alt', true);
-//                 if (!$alt) $alt = get_the_title($id);
-//             } else {
-//                 $alt = pathinfo(basename($url), PATHINFO_FILENAME);
-//                 $alt = str_replace(['-', '_'], ' ', $alt);
-//             }
-//             $alt = esc_attr($alt);
 
-//             if (strpos($tag, 'alt=') !== false) {
-//                 $tag = preg_replace('/alt=["\'].*?["\']/', 'alt="'.$alt.'"', $tag);
-//             } else {
-//                 $tag = str_replace('<img', '<img alt="'.$alt.'"', $tag);
-//             }
-//             return $tag;
-
-//         }, $html);
-
-//     });
-// });
 
 add_filter('wpseo_opengraph_image', 'bn_fix_og_image', 999);
 
@@ -1487,33 +1456,12 @@ add_action('wp_enqueue_scripts', function () {
 
 
 
-// function global_fix_multiple_h1_safe($buffer) {
 
-//     if (is_admin()) return $buffer;
-
-//     $count = 0;
-
-//     $buffer = preg_replace_callback('/<h1(.*?)>(.*?)<\/h1>/is', function($matches) use (&$count) {
-
-//         $count++;
-
-//         if ($count === 1) return $matches[0];
-
-//         return "<h2{$matches[1]}>{$matches[2]}</h2>";
-
-//     }, $buffer);
-
-//     return $buffer;
-// }
-
-// add_action('template_redirect', function () {
-//     ob_start('global_fix_multiple_h1_safe');
-// });
 
 
 add_action('template_redirect', function () {
 
-    $uri = $_SERVER['REQUEST_URI'];
+    $uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
 
     // 🔥 DE URL FIX
     if (strpos($uri, '/de/products/tour-peaks-of-the-balkans-trail/') !== false) {
@@ -1542,7 +1490,7 @@ add_action('template_redirect', function () {
 
 add_action('init', function () {
 
-    $uri = $_SERVER['REQUEST_URI'];
+    $uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
 
     $blocked = [
         '/de/peaks-of-the-balkans/peaks-of-the-balkans-map/',
@@ -1709,14 +1657,7 @@ add_action('wp_head', function() {
     }
 }, 1);
 
-// add_action('wp_head', function() {
-//     if (is_paged()) {
-//         global $wp;
-//         $canonical = home_url(add_query_arg(array(), $wp->request));
-//         $canonical = preg_replace('/\/page\/[0-9]+\/?$/', '/', $canonical);
-//         echo '<link rel="canonical" href="' . esc_url($canonical) . '" />';
-//     }
-// });
+
 
 add_action('template_redirect', function() {
     if (is_author()) {
@@ -1735,12 +1676,7 @@ add_action('template_redirect', function() {
 add_filter('jpeg_quality', fn($q) => 65);
 add_filter('wp_editor_set_quality', fn($q) => 65);
 
-// add_action('template_redirect', function() {
-//     if (is_admin()) return;
-//     ob_start(function($html) {
-//         return preg_replace('/<link[^>]+editorskit-frontend-css[^>]+>/i', '', $html);
-//     });
-// });
+
 
 
 add_image_size('adventure-card', 474, 350, true);
