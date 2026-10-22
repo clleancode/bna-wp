@@ -4,12 +4,44 @@
                     <?php while( have_rows('certificates', 'option') ): the_row(); 
                         $link = get_sub_field('certificate_link', 'option'); 
                         $image_id = get_sub_field('certificate_image', 'option'); 
+                        if ( is_array( $image_id ) ) {
+                            $image_id = isset( $image_id['ID'] ) ? $image_id['ID'] : 0;
+                        }
                         $image = wp_get_attachment_image_src($image_id, 'full'); 
-                       
+                        $certificate_url = is_array( $link ) ? ( ! empty( $link['url'] ) ? $link['url'] : '' ) : $link;
+                        $certificate_title = is_array( $link ) && ! empty( $link['title'] ) ? $link['title'] : '';
+                        $certificate_target = is_array( $link ) && ! empty( $link['target'] ) ? $link['target'] : '_blank';
+                        $certificate_host = $certificate_url ? strtolower( (string) wp_parse_url( $certificate_url, PHP_URL_HOST ) ) : '';
+
+                        if ( $certificate_host === 'tripadvisor.com' || $certificate_host === 'www.tripadvisor.com' ) {
+                            $certificate_path = wp_parse_url( $certificate_url, PHP_URL_PATH );
+                            if ( empty( $certificate_path ) || $certificate_path === '/' ) {
+                                $certificate_url = 'https://www.tripadvisor.com/Attraction_Review-g737141-d8290462-Reviews-Balkan_Natural_Adventure-Pec.html';
+                            }
+                            $certificate_label = 'View Balkan Natural Adventure on Tripadvisor';
+                        } else {
+                            $certificate_image_alt = trim( (string) get_post_meta( (int) $image_id, '_wp_attachment_image_alt', true ) );
+                            $is_generic_image_alt = ! $certificate_image_alt
+                                || preg_match( '/^(?:certificates?|home|balkan natural adventure)/i', $certificate_image_alt )
+                                || stripos( $certificate_image_alt, 'experience the beauty, culture, and adventure' ) !== false;
+                            $is_generic_link_title = ! $certificate_title
+                                || preg_match( '/^(?:certificates?|home|balkan natural adventure)/i', $certificate_title );
+
+                            if ( ! $is_generic_image_alt ) {
+                                $certificate_label = 'View ' . $certificate_image_alt;
+                            } elseif ( ! $is_generic_link_title ) {
+                                $certificate_label = 'View ' . $certificate_title;
+                            } else {
+                                $provider = preg_replace( '/^www\./', '', $certificate_host );
+                                $provider = preg_replace( '/\.(?:com|org|net|info|eu|co\.uk)$/', '', $provider );
+                                $provider = ucwords( str_replace( array( '-', '_' ), ' ', $provider ) );
+                                $certificate_label = $provider ? 'View Balkan Natural Adventure certificate from ' . $provider : 'View Balkan Natural Adventure certificate';
+                            }
+                        }
                     ?>
-                        <?php if( $link && $image ): ?>
-                            <a href="<?php echo esc_url($link); ?>" target="_blank" >
-                                <img src="<?php echo esc_url($image[0]); ?>" alt="certificates" width="150" height="55">
+                        <?php if( $certificate_url && $image ): ?>
+                            <a href="<?php echo esc_url( $certificate_url ); ?>" target="<?php echo esc_attr( $certificate_target ); ?>" rel="noopener noreferrer" aria-label="<?php echo esc_attr( $certificate_label ); ?>">
+                                <img src="<?php echo esc_url($image[0]); ?>" alt="" width="150" height="55">
                             </a>
                         <?php endif; ?>
                     <?php endwhile; ?>

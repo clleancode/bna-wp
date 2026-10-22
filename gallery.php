@@ -105,19 +105,19 @@
         if (get_field('facebook_url')):
             $facebook_url = urlencode(get_field('facebook_url'));
     ?>
-        <li><a class="fb" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo $facebook_url; ?>"><span class="icon-social-facebook"></span></a></li>
+        <li><a class="fb" href="https://www.facebook.com/sharer/sharer.php?u=<?php echo $facebook_url; ?>" aria-label="Share this page on Facebook"><span class="icon-social-facebook" aria-hidden="true"></span></a></li>
     <?php
         endif;
         if (get_field('twitter_url')):
             $twitter_url = urlencode(get_field('twitter_url'));
     ?>
-        <li><a class="tw" href="https://twitter.com/intent/tweet?url=<?php echo $twitter_url; ?>"><span class="icon-twitter"></span></a></li>
+        <li><a class="tw" href="https://twitter.com/intent/tweet?url=<?php echo $twitter_url; ?>" aria-label="Share this page on Twitter"><span class="icon-twitter" aria-hidden="true"></span></a></li>
     <?php
         endif;
         if (get_field('linkedin_url')):
             $linkedin_url = urlencode(get_field('linkedin_url'));
     ?>
-        <li><a class="in" href="https://www.linkedin.com/shareArticle?url=<?php echo $linkedin_url; ?>"><span class="icon-linkedin2"></span></a></li>
+        <li><a class="in" href="https://www.linkedin.com/shareArticle?url=<?php echo $linkedin_url; ?>" aria-label="Share this page on LinkedIn"><span class="icon-linkedin2" aria-hidden="true"></span></a></li>
     <?php
         endif;
     ?>
