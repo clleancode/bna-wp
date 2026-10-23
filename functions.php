@@ -148,7 +148,7 @@ function balkan_nature_adventure_scripts() {
          'bundle-js',
          $theme_dir_uri . '/js/bundle.js',
          array(),
-         filemtime($theme_dir . '/js/bundle.js'),
+         file_exists( $theme_dir . '/js/bundle.js' ) ? filemtime( $theme_dir . '/js/bundle.js' ) : '1.0',
          true
      );
 
@@ -822,7 +822,8 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 
 	add_action('parse_request', function($wp) {
 
-		$uri = $_SERVER['REQUEST_URI'];
+		$uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		$path = (string) wp_parse_url( $uri, PHP_URL_PATH );
 	
 		$blocked_urls = [
 			'/de/grabbing-travel-world-headlines/',
@@ -834,7 +835,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 		];
 	
 		foreach ($blocked_urls as $bad) {
-			if (strpos($uri, $bad) !== false) {
+			if ( strpos( $path, $bad ) !== false ) {
 	
 				global $wp_query;
 				$wp_query->set_404();
@@ -1513,10 +1514,11 @@ add_action('wp_enqueue_scripts', function () {
 
 add_action('template_redirect', function () {
 
-    $uri = $_SERVER['REQUEST_URI'];
+    $uri  = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+    $path = (string) wp_parse_url( $uri, PHP_URL_PATH );
 
-    // 🔥 DE URL FIX
-    if (strpos($uri, '/de/products/tour-peaks-of-the-balkans-trail/') !== false) {
+    // DE URL FIX
+    if ( strpos( $path, '/de/products/tour-peaks-of-the-balkans-trail/' ) !== false ) {
 
         // ndal çdo redirect canonical të WordPress
         add_filter('redirect_canonical', '__return_false');
@@ -1527,8 +1529,8 @@ add_action('template_redirect', function () {
         return;
     }
 
-    // 🔥 NL URL FIX
-    if (strpos($uri, '/nl/products/tour-peaks-of-the-balkans-trail/') !== false) {
+    // NL URL FIX
+    if ( strpos( $path, '/nl/products/tour-peaks-of-the-balkans-trail/' ) !== false ) {
 
         add_filter('redirect_canonical', '__return_false');
 
@@ -1542,7 +1544,9 @@ add_action('template_redirect', function () {
 
 add_action('init', function () {
 
-    $uri = $_SERVER['REQUEST_URI'];
+    $uri  = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+    $path = (string) wp_parse_url( $uri, PHP_URL_PATH );
+    $path = trailingslashit( $path );
 
     $blocked = [
         '/de/peaks-of-the-balkans/peaks-of-the-balkans-map/',
@@ -1551,7 +1555,7 @@ add_action('init', function () {
 
     foreach ($blocked as $url) {
 
-        if (strpos($uri, $url) === 0) {
+        if ( strpos( $path, $url ) === 0 ) {
 
             remove_action('template_redirect', 'redirect_canonical');
             add_filter('redirect_canonical', '__return_false');
@@ -1607,11 +1611,13 @@ function bna_fix_redirect_chains() {
         '/nl/products/via-ferrata-mat-and-ari-2/'                           => '/nl/products/ontdek-via-ferrata-mat-en-ari/',
     );
 
-    $current_path = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH );
+    $uri          = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+    $current_path = (string) wp_parse_url( $uri, PHP_URL_PATH );
+    $current_path = trailingslashit( $current_path );
 
     foreach ( $redirects as $from => $to ) {
         if ( $current_path === $from ) {
-            wp_redirect( home_url( $to ), 301 );
+            wp_safe_redirect( home_url( $to ), 301 );
             exit;
         }
     }
@@ -1643,7 +1649,8 @@ add_action('template_redirect', function () {
 
     if (!is_singular()) return;
 
-    $current_url = home_url($_SERVER['REQUEST_URI']);
+    $uri         = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+    $current_url = home_url( esc_url_raw( $uri ) );
 
     if (strpos($current_url, '/de/products/peaks-of-the-balkans-trail/') === false) {
         return;
@@ -1667,8 +1674,8 @@ add_action('template_redirect', function () {
 
     if (is_admin() || wp_doing_ajax()) return;
 
-    $uri = $_SERVER['REQUEST_URI'] ?? '';
-    $path = parse_url( $uri, PHP_URL_PATH );
+    $uri  = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+    $path = wp_parse_url( $uri, PHP_URL_PATH );
     $path = is_string( $path ) ? trailingslashit( $path ) : '';
 
     if ( $path === '/products/peaks-of-the-balkans-trail/' ) {
@@ -1827,9 +1834,8 @@ add_action('template_redirect', function () {
 
 
 add_action( 'wp_head', function () {
-    echo '<style>
-    @font-face { font-family: "Prompt"; font-display: swap; }
-    </style>';
+    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static CSS string, no user data
+    echo '<style>@font-face{font-family:"Prompt";font-display:swap;}</style>' . "\n";
 }, 1 );
 
 

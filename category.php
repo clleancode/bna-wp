@@ -5,10 +5,10 @@
 <div class="banner container">
 <img src="<?php bloginfo('template_url'); ?>/img/pics/Screen-Shot-2017-05-27-at-15.28.20.png.webp" alt="Banner Image">
     <div class="banner-content">
-        <h1><?php echo single_cat_title('', false); ?></h1>
+        <h1><?php echo esc_html( single_cat_title('', false) ); ?></h1>
         <ul>
-            <li><a href="<?php echo get_home_url(); ?>">Home <span class="icon-cheveron-down"></span></a></li>
-            <li><?php echo single_cat_title('', false); ?></li>
+            <li><a href="<?php echo esc_url( get_home_url() ); ?>">Home <span class="icon-cheveron-down"></span></a></li>
+            <li><?php echo esc_html( single_cat_title('', false) ); ?></li>
         </ul>
     </div>
 </div>
@@ -147,7 +147,7 @@
                   );
               }
 
-              echo $pagination_link;
+              echo wp_kses_post( $pagination_link );
           }
       }
     ?>

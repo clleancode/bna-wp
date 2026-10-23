@@ -7,7 +7,7 @@
 ?>
 
 <div class="search-results container">
-<h1 class="search-title"><?php printf( esc_html__( 'Search Results for: %s', 'balkan-nature-adventure' ), '<span>' . get_search_query() . '</span>' ); ?></h1>
+<h1 class="search-title"><?php printf( esc_html__( 'Search Results for: %s', 'balkan-nature-adventure' ), '<span>' . esc_html( get_search_query() ) . '</span>' ); ?></h1>
         <?php if ( have_posts() ) : ?>
             <?php while ( have_posts() ) : the_post(); ?>
                 <div class="post">
@@ -17,10 +17,10 @@
                         </div>
                     <?php endif; ?>
                     <div class="post-content">
-                        <h2 class="post-title"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h2>
+                        <h2 class="post-title"><a href="<?php echo esc_url( get_the_permalink() ); ?>"><?php echo esc_html( get_the_title() ); ?></a></h2>
                         <div class="post-desc">
                         <?php the_excerpt(); ?>
-                            <a href="<?php the_permalink(); ?>" class="read-more">Read More</a>
+                            <a href="<?php echo esc_url( get_the_permalink() ); ?>" class="read-more">Read More</a>
                         </div>
                     </div>
                 </div>

@@ -66,7 +66,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                                 ); 
                             ?>
                         </ul>
-                        <h3><?php the_field('header_text'); ?></h3>
+                        <h3><?php echo esc_html( get_field('header_text') ); ?></h3>
                         <div class="menu-mobile--buttons"> 
                             <div class="search-box">
                                 <form role="search" method="get" class="search-form" action="<?php echo esc_url( home_url( '/' ) ); ?>">

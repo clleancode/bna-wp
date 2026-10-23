@@ -18,7 +18,7 @@
         </div>
         <div class="footer container">
             <div class="footer-top">
-                <h2><?php the_field('newsletter_bold_title', 'option') ?> <br> <span><?php the_field('newsletter_title', 'option') ?></span></h2>
+                <h2><?php echo wp_kses_post( get_field('newsletter_bold_title', 'option') ); ?> <br> <span><?php echo wp_kses_post( get_field('newsletter_title', 'option') ); ?></span></h2>
                 <form class="newsletter" method="post" action="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php esc_attr_e( 'Newsletter signup', 'balkan-nature-adventure' ); ?>">
                     <span class="icon-envelope" aria-hidden="true"></span>
                     <label class="sr-only" for="footer-newsletter-email"><?php esc_html_e( 'Email Address', 'balkan-nature-adventure' ); ?></label>
@@ -38,10 +38,10 @@
             </div>
             <div class="footer-center">
                 <div class="row">
-                    <a href="<?php echo get_home_url(); ?>" class="footer-logo-link" aria-label="Footer Logo Link">
+                    <a href="<?php echo esc_url( get_home_url() ); ?>" class="footer-logo-link" aria-label="Footer Logo Link">
                         <?php echo wp_get_attachment_image(get_field('footer_logo', 'option'), 'full'); ?> 
                     </a>
-                    <p><?php the_field('footer_paragraph', 'option') ?></p>
+                    <p><?php echo wp_kses_post( get_field('footer_paragraph', 'option') ); ?></p>
                     <div class="social-media">
                         <?php
                             if(get_field('facebook_url', 'options')):
@@ -78,7 +78,7 @@
                 <?php $numberOfSlides = 0; ?>
                 <?php while(have_rows('footer_content', 'option')): the_row(); $numberOfSlides++; ?>
                     <div class="row">  
-                        <p><?php the_sub_field('headlines', 'option'); ?></p>
+                        <p><?php echo wp_kses_post( get_sub_field('headlines', 'option') ); ?></p>
                         <ul>
                             <?php while(have_rows('pages_link', 'option')): the_row(); $numberOfSlides++; ?>
                                 <li><a href="<?php echo esc_url( get_sub_field('page_link', 'option') ); ?>"><?php echo esc_html( get_sub_field('page_title', 'option') ); ?></a></li>
@@ -87,11 +87,11 @@
                     </div>
                 <?php endwhile; ?> 
                 <div class="row">
-                   <?php the_field('content', 'option'); ?>
+                   <?php echo wp_kses_post( get_field('content', 'option') ); ?>
                 </div>
             </div>
             <div class="footer-bottom">
-                <?php the_field('copyright', 'option'); ?>
+                <?php echo wp_kses_post( get_field('copyright', 'option') ); ?>
                 <div class="footer-bottom--left">
                     <?php while(have_rows('site_links', 'option')): the_row(); $numberOfSlides++; ?>
                         <a href="<?php echo esc_url( get_sub_field('site_link', 'option') ); ?>"><?php echo esc_html( get_sub_field('site_title', 'option') ); ?></a>
