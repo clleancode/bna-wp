@@ -676,17 +676,6 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 	}
 
 	add_action('acf/init', 'acf_content_block');
-
-
-    function bna_prepare_custom_code_field( $field ) {
-		if ( ! current_user_can( 'unfiltered_html' ) ) {
-			return false;
-		}
-
-		return $field;
-	}
-	add_filter( 'acf/prepare_field/name=custom_code', 'bna_prepare_custom_code_field' );
-	
 	/**
 	 * Language Strings
 	 */
