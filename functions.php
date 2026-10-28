@@ -128,7 +128,13 @@ function balkan_nature_adventure_scripts() {
 		true
 	);
 
-	// swiper.min.js is already bundled inside bundle.js — no separate enqueue needed.
+	wp_enqueue_script(
+		'swiper',
+		$theme_dir_uri . '/js/swiper.min.js',
+		array(),
+		file_exists( $theme_dir . '/js/swiper.min.js' ) ? filemtime( $theme_dir . '/js/swiper.min.js' ) : '10.0.1',
+		true
+	);
 
 	wp_enqueue_script(
 		'main-js',
