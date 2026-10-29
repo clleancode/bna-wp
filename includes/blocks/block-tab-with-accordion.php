@@ -74,7 +74,7 @@
                     <?php
                         $file = get_sub_field('video');
                         if( $file ): ?>
-                        <a href="<?php echo $file['url']; ?>" class="video-button" data-fancybox data-width="640" data-height="360">
+                        <a href="<?php echo esc_url( $file['url'] ); ?>" class="video-button" data-fancybox data-width="640" data-height="360">
                             <span class="icon-play"></span>
                         </a>
                     <?php endif; ?>
