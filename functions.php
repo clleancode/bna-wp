@@ -1394,6 +1394,77 @@ function bn_fix_og_image($image) {
     );
 }
 
+function bna_is_production_domain() {
+	$home_host    = strtolower( (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST ) );
+	$request_host = isset( $_SERVER['HTTP_HOST'] )
+		? strtolower( (string) wp_parse_url( '//' . wp_unslash( $_SERVER['HTTP_HOST'] ), PHP_URL_HOST ) )
+		: '';
+
+	return (bool) array_intersect(
+		array( $home_host, $request_host ),
+		array( 'bnadventure.com', 'www.bnadventure.com' )
+	);
+}
+
+function bna_normalize_production_reference( $url ) {
+	if ( ! is_string( $url ) || $url === '' ) {
+		return $url;
+	}
+
+	$parts = wp_parse_url( $url );
+	if ( ! is_array( $parts ) ) {
+		return $url;
+	}
+
+	$host = isset( $parts['host'] ) ? strtolower( $parts['host'] ) : '';
+	if ( ! in_array( $host, array( 'dev.bnadventure.com', 'bnadventure.com', 'www.bnadventure.com' ), true ) ) {
+		return $url;
+	}
+
+	$path = isset( $parts['path'] ) ? untrailingslashit( $parts['path'] ) : '';
+	if ( $path === '/categories/albania' ) {
+		return 'https://bnadventure.com/product/albania/';
+	}
+
+	if ( $host === 'www.bnadventure.com' ) {
+		return preg_replace( '#^(?:https?:)?//www\.bnadventure\.com#i', 'https://bnadventure.com', $url, 1 );
+	}
+
+	if ( $host === 'dev.bnadventure.com' ) {
+		return preg_replace( '#^(?:https?:)?//dev\.bnadventure\.com#i', 'https://bnadventure.com', $url, 1 );
+	}
+
+	return $url;
+}
+
+function bna_fix_yoast_breadcrumb_schema( $piece ) {
+	if ( ! bna_is_production_domain() || ! is_array( $piece ) ) {
+		return $piece;
+	}
+
+	if ( isset( $piece['@id'] ) ) {
+		$piece['@id'] = bna_normalize_production_reference( $piece['@id'] );
+	}
+
+	if ( isset( $piece['itemListElement'] ) && is_array( $piece['itemListElement'] ) ) {
+		foreach ( $piece['itemListElement'] as &$list_item ) {
+			if ( ! is_array( $list_item ) || ! isset( $list_item['item'] ) ) {
+				continue;
+			}
+
+			if ( is_string( $list_item['item'] ) ) {
+				$list_item['item'] = bna_normalize_production_reference( $list_item['item'] );
+			} elseif ( is_array( $list_item['item'] ) && isset( $list_item['item']['@id'] ) ) {
+				$list_item['item']['@id'] = bna_normalize_production_reference( $list_item['item']['@id'] );
+			}
+		}
+		unset( $list_item );
+	}
+
+	return $piece;
+}
+add_filter( 'wpseo_schema_breadcrumb', 'bna_fix_yoast_breadcrumb_schema', 11 );
+
 // Filter Yoast Open Graph URL for paginated taxonomy archives.
 add_filter( 'wpseo_opengraph_url', function ( $url ) {
 	if ( is_paged() && ( is_category() || is_tag() || is_tax() ) ) {
@@ -1784,6 +1855,46 @@ add_filter( 'pll_rel_hreflang_attributes', function( $hreflangs ) {
 add_action('template_redirect', function () {
     if (is_admin()) return;
     ob_start(function ($html) {
+        if ( bna_is_production_domain() && stripos( $html, 'dev.bnadventure.com' ) !== false ) {
+            $html = str_ireplace(
+                array(
+                    'https://dev.bnadventure.com/categories/albania/',
+                    'http://dev.bnadventure.com/categories/albania/',
+                    '//dev.bnadventure.com/categories/albania/',
+                    'https:\\/\\/dev.bnadventure.com\\/categories\\/albania\\/',
+                    'http:\\/\\/dev.bnadventure.com\\/categories\\/albania\\/',
+                ),
+                array(
+                    'https://bnadventure.com/product/albania/',
+                    'https://bnadventure.com/product/albania/',
+                    'https://bnadventure.com/product/albania/',
+                    'https:\\/\\/bnadventure.com\\/product\\/albania\\/',
+                    'https:\\/\\/bnadventure.com\\/product\\/albania\\/',
+                ),
+                $html
+            );
+
+            $html = str_ireplace(
+                array(
+                    'https://dev.bnadventure.com',
+                    'http://dev.bnadventure.com',
+                    '//dev.bnadventure.com',
+                    'https:\\/\\/dev.bnadventure.com',
+                    'http:\\/\\/dev.bnadventure.com',
+                    '\\/\\/dev.bnadventure.com',
+                ),
+                array(
+                    'https://bnadventure.com',
+                    'https://bnadventure.com',
+                    'https://bnadventure.com',
+                    'https:\\/\\/bnadventure.com',
+                    'https:\\/\\/bnadventure.com',
+                    'https:\\/\\/bnadventure.com',
+                ),
+                $html
+            );
+        }
+
         // Hiq editorskit CSS
         $html = preg_replace('/<link[^>]+editorskit-frontend-css[^>]+>/i', '', $html);
 
