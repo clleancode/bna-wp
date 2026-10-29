@@ -1621,6 +1621,52 @@ function bna_fix_redirect_chains() {
 add_action( 'template_redirect', 'bna_fix_redirect_chains' );
 
 
+function bna_cookie_policy_path_from_url( $url ) {
+	$path = wp_parse_url( (string) $url, PHP_URL_PATH );
+	if ( ! is_string( $path ) ) {
+		return '';
+	}
+
+	$path      = '/' . trim( $path, '/' );
+	$home_path = wp_parse_url( home_url( '/' ), PHP_URL_PATH );
+	$home_path = is_string( $home_path ) ? '/' . trim( $home_path, '/' ) : '/';
+
+	if ( $home_path !== '/' && ( $path === $home_path || strpos( $path, $home_path . '/' ) === 0 ) ) {
+		$path = substr( $path, strlen( $home_path ) );
+	}
+
+	return $path === '' ? '/' : $path;
+}
+
+add_action( 'template_redirect', function () {
+	if ( is_admin() || wp_doing_ajax() ) {
+		return;
+	}
+
+	$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+	$path        = bna_cookie_policy_path_from_url( $request_uri );
+	$legacy_paths = array( '/cookie-policyyy', '/cookie-policy-2' );
+
+	if ( in_array( $path, $legacy_paths, true ) ) {
+		wp_safe_redirect( home_url( '/cookie-policy/' ), 301 );
+		exit;
+	}
+
+	if ( $path === '/cookie-policy' ) {
+		// Stop WordPress from applying a stale old-slug redirect to the canonical URL.
+		remove_action( 'template_redirect', 'wp_old_slug_redirect' );
+	}
+}, -100 );
+
+add_filter( 'redirect_canonical', function ( $redirect_url, $requested_url ) {
+	if ( bna_cookie_policy_path_from_url( $requested_url ) === '/cookie-policy' ) {
+		return false;
+	}
+
+	return $redirect_url;
+}, PHP_INT_MAX, 2 );
+
+
 /**
  * BNA Hreflang Generator - fallback for archives and paginated pages.
  */
