@@ -706,11 +706,12 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 	 * Language Strings
 	 */
 
-	 add_action( 'init', function() {
-		if ( function_exists( 'pll_register_string' ) ) {
-			pll_register_string( 'Booking button label', 'Book Now', 'Theme' );
-		}
-	} );
+function bna_register_theme_translation_strings() {
+	if ( function_exists( 'pll_register_string' ) ) {
+		pll_register_string( 'Booking button label', 'Book Now', 'Theme' );
+	}
+}
+add_action( 'init', 'bna_register_theme_translation_strings' );
 
 	/**
 	 * Custom post type
