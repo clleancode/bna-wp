@@ -14,13 +14,13 @@
             $file = get_field('button');
             if( $file ): ?>
                 
-            <a class="btn" href="<?php echo $file['url']; ?>" data-fancybox data-width="640" data-height="360"> Watch Video  <span class="icon-angle-double-down"></span></a>
+            <a class="btn" href="<?php echo esc_url( $file['url'] ); ?>" data-fancybox data-width="640" data-height="360"> Watch Video  <span class="icon-angle-double-down"></span></a>
             <?php endif; ?>
         </div>
         <?php
             $file = get_field('video');
             if( $file ): ?>
-            <a href="<?php echo $file['url']; ?>" class="video-button" data-fancybox data-width="640" data-height="360">
+            <a href="<?php echo esc_url( $file['url'] ); ?>" class="video-button" data-fancybox data-width="640" data-height="360">
                 <span class="icon-play"></span>
             </a>
         <?php endif; ?>
