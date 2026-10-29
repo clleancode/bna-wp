@@ -1913,6 +1913,53 @@ function BNA_smtp_admin_notice() {
 add_action( 'admin_notices', 'BNA_smtp_admin_notice' );
 
 /**
+ * Add a non-interactive honeypot to Contact Form 7 forms.
+ *
+ * @param string $elements Rendered form elements.
+ * @return string
+ */
+function BNA_add_cf7_honeypot( $elements ) {
+	if ( is_admin() ) {
+		return $elements;
+	}
+
+	$elements .= '<p class="bna-form-honeypot" aria-hidden="true"><label>Leave this field empty<input type="text" name="bna_contact_website" value="" tabindex="-1" autocomplete="off"></label></p>';
+
+	return $elements;
+}
+add_filter( 'wpcf7_form_elements', 'BNA_add_cf7_honeypot' );
+
+/**
+ * Reject Contact Form 7 submissions that fill the honeypot field.
+ *
+ * @param bool $is_spam Whether another filter already marked the submission as spam.
+ * @return bool
+ */
+function BNA_check_cf7_honeypot( $is_spam ) {
+	if ( $is_spam || ! isset( $_POST['bna_contact_website'] ) ) {
+		return $is_spam;
+	}
+
+	$honeypot_value = wp_unslash( $_POST['bna_contact_website'] );
+	if ( empty( $honeypot_value ) ) {
+		return false;
+	}
+
+	$submission = class_exists( 'WPCF7_Submission' ) ? WPCF7_Submission::get_instance() : null;
+	if ( $submission && method_exists( $submission, 'add_spam_log' ) ) {
+		$submission->add_spam_log(
+			array(
+				'agent'  => 'bna_honeypot',
+				'reason' => 'The hidden honeypot field was completed.',
+			)
+		);
+	}
+
+	return true;
+}
+add_filter( 'wpcf7_spam', 'BNA_check_cf7_honeypot' );
+
+/**
  * Return the address that receives website contact messages.
  */
 function BNA_get_contact_email() {
@@ -2033,38 +2080,51 @@ function dergo_te_dhenat_ne_google_sheets($contact_form) {
 
     $data = $submission->get_posted_data();
 
-    $website = parse_url(home_url(), PHP_URL_HOST);
     $page_url = wp_get_referer();
 
-	if (empty($page_url)) {
-		$page_url = home_url(add_query_arg([], $GLOBALS['wp']->request));
+	if ( empty( $page_url ) ) {
+		$request_path = isset( $GLOBALS['wp']->request ) ? $GLOBALS['wp']->request : '';
+		$page_url     = home_url( $request_path );
 	}
+	$page_url = esc_url_raw( $page_url );
 
-    $ip_address = $_SERVER['REMOTE_ADDR'] ?? '';
-    $ip_address = trim($ip_address);
+    $ip_address = isset( $_SERVER['REMOTE_ADDR'] )
+		? trim( sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) )
+		: '';
 
-    if (filter_var($ip_address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+    $public_ip_flags = FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
+
+    if ( false === filter_var( $ip_address, FILTER_VALIDATE_IP, $public_ip_flags ) ) {
+		$ip_address = '';
+	} elseif ( filter_var( $ip_address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 ) ) {
         $parts = explode('.', $ip_address);
         $parts[3] = '0';
         $ip_address = implode('.', $parts);
+	} elseif ( filter_var( $ip_address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) ) {
+		$packed_ip = inet_pton( $ip_address );
+		$masked_ip = false !== $packed_ip ? inet_ntop( substr( $packed_ip, 0, 8 ) . str_repeat( "\0", 8 ) ) : false;
+		$ip_address = is_string( $masked_ip ) ? $masked_ip : '';
+	} else {
+		$ip_address = '';
     }
 
     $country = '';
 
     if (!empty($ip_address) && !in_array($ip_address, ['127.0.0.1', '::1'], true)) {
 
-        $geo = wp_remote_get(
-            "https://ipwho.is/{$ip_address}",
+        $geo = wp_safe_remote_get(
+            'https://ipwho.is/' . rawurlencode( $ip_address ),
             [
-                'timeout' => 5,
+                'timeout'             => 5,
+				'limit_response_size' => 16384,
             ]
         );
 
-        if (!is_wp_error($geo)) {
-            $geo_body = json_decode(wp_remote_retrieve_body($geo), true);
+        if ( ! is_wp_error( $geo ) && 200 === (int) wp_remote_retrieve_response_code( $geo ) ) {
+			$geo_body = json_decode( wp_remote_retrieve_body( $geo ), true );
 
-            if (!empty($geo_body['success'])) {
-                $country = sanitize_text_field($geo_body['country'] ?? '');
+            if ( is_array( $geo_body ) && ! empty( $geo_body['success'] ) ) {
+				$country = sanitize_text_field( $geo_body['country'] ?? '' );
             }
         }
     }
@@ -2081,18 +2141,19 @@ function dergo_te_dhenat_ne_google_sheets($contact_form) {
         'Koha'     => current_time('Y-m-d H:i:s'),
     ];
 
-    $response = wp_remote_post(
+    $response = wp_safe_remote_post(
         $script_url,
         [
-            'body'    => $body,
-            'timeout' => 15,
+			'body'                => $body,
+			'timeout'             => 15,
+			'limit_response_size' => 1024,
         ]
     );
 
-    if (is_wp_error($response)) {
-        error_log('GAS ERROR: ' . $response->get_error_message());
-    } else {
-        error_log('GAS RESPONSE: ' . wp_remote_retrieve_body($response));
+    if ( is_wp_error( $response ) ) {
+		error_log( 'GAS ERROR: Google Sheets request failed.' );
+	} elseif ( (int) wp_remote_retrieve_response_code( $response ) < 200 || (int) wp_remote_retrieve_response_code( $response ) >= 300 ) {
+		error_log( 'GAS ERROR: Google Sheets returned HTTP ' . absint( wp_remote_retrieve_response_code( $response ) ) . '.' );
     }
 }
 
