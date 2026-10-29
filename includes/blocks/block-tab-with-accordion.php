@@ -28,7 +28,7 @@
                            echo '<span class="icon-cat"></span>';
                        }
                     ?>
-                    <h4><?php the_sub_field('topic_title'); ?></h4>
+                    <h4><?php echo esc_html( get_sub_field( 'topic_title' ) ); ?></h4>
                 </div>
                 <?php
                     if ($activeTopicIndex === $topicIndex) {
@@ -60,11 +60,11 @@
                                 aria-expanded="false"
                                 aria-controls="<?php echo esc_attr( $panel_id ); ?>"
                             >
-                                <h5 class="paragraph"><?php the_sub_field('accordian_title'); ?></h5>
+                                <h5 class="paragraph"><?php echo esc_html( get_sub_field( 'accordian_title' ) ); ?></h5>
                                 <span class="icon-up-right arrow"></span>
                             </div>
                             <div class="accordion--card-body" id="<?php echo esc_attr( $panel_id ); ?>">
-                                <p><?php the_sub_field('accordian_paragraph'); ?></p>
+                                <p><?php echo wp_kses_post( get_sub_field( 'accordian_paragraph' ) ); ?></p>
                             </div>
                         </div>
                     <?php endwhile; wp_reset_postdata(); ?>
@@ -72,9 +72,9 @@
                 <div class="topic--video wrapper">
                 <?php echo wp_get_attachment_image(get_sub_field('photo_of_video'), 'full'); ?> 
                     <?php
-                        $file = get_sub_field('video');
-                        if( $file ): ?>
-                        <a href="<?php echo $file['url']; ?>" class="video-button" data-fancybox data-width="640" data-height="360">
+                        $file = get_sub_field( 'video' );
+                        if ( is_array( $file ) && ! empty( $file['url'] ) ) : ?>
+                        <a href="<?php echo esc_url( $file['url'] ); ?>" class="video-button" data-fancybox data-width="640" data-height="360">
                             <span class="icon-play"></span>
                         </a>
                     <?php endif; ?>

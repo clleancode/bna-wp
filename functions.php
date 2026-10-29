@@ -814,7 +814,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 		}
 	
 		// Sanitize and save the data
-		$category = isset( $_POST['product-category'] ) ? sanitize_text_field( $_POST['product-category'] ) : '';
+		$category = isset( $_POST['product-category'] ) ? sanitize_text_field( wp_unslash( $_POST['product-category'] ) ) : '';
 		wp_set_post_terms( $post_id, $category, 'Categories', false );
 	}
 	
@@ -824,7 +824,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 
 	add_action('parse_request', function($wp) {
 
-		$uri = $_SERVER['REQUEST_URI'];
+		$uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
 	
 		$blocked_urls = [
 			'/de/grabbing-travel-world-headlines/',
@@ -1515,7 +1515,7 @@ add_action('wp_enqueue_scripts', function () {
 
 add_action('template_redirect', function () {
 
-    $uri = $_SERVER['REQUEST_URI'];
+    $uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
 
     // 🔥 DE URL FIX
     if (strpos($uri, '/de/products/tour-peaks-of-the-balkans-trail/') !== false) {
@@ -1544,7 +1544,7 @@ add_action('template_redirect', function () {
 
 add_action('init', function () {
 
-    $uri = $_SERVER['REQUEST_URI'];
+    $uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
 
     $blocked = [
         '/de/peaks-of-the-balkans/peaks-of-the-balkans-map/',
@@ -1609,11 +1609,13 @@ function bna_fix_redirect_chains() {
         '/nl/products/via-ferrata-mat-and-ari-2/'                           => '/nl/products/ontdek-via-ferrata-mat-en-ari/',
     );
 
-    $current_path = parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH );
+    $request_uri  = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+    $current_path = wp_parse_url( $request_uri, PHP_URL_PATH );
+    $current_path = is_string( $current_path ) ? $current_path : '';
 
     foreach ( $redirects as $from => $to ) {
         if ( $current_path === $from ) {
-            wp_redirect( home_url( $to ), 301 );
+            wp_safe_redirect( home_url( $to ), 301 );
             exit;
         }
     }
@@ -1645,9 +1647,11 @@ add_action('template_redirect', function () {
 
     if (!is_singular()) return;
 
-    $current_url = home_url($_SERVER['REQUEST_URI']);
+    $request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+    $current_path = wp_parse_url( $request_uri, PHP_URL_PATH );
+    $current_path = is_string( $current_path ) ? $current_path : '';
 
-    if (strpos($current_url, '/de/products/peaks-of-the-balkans-trail/') === false) {
+    if ( strpos( $current_path, '/de/products/peaks-of-the-balkans-trail/' ) === false ) {
         return;
     }
 
