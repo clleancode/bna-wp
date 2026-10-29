@@ -22,19 +22,6 @@
             $(this).css({transition: "all .3s ease-in-out"});
         });
 
-        // // ===== Home Slider (Swiper) =====
-        // if ($(".myHeader").length) {
-        //     var swiper = new Swiper(".myHeader", {
-        //         effect: "fade",
-        //         speed: 800,
-        //         loop: true,
-        //         navigation: {
-        //             nextEl: ".swiper-button-next",
-        //             prevEl: ".swiper-button-prev",
-        //         }
-        //     });
-        // }
-
         // ===== Search Overlay =====
         $(".search-box--inner").on("click", function(){	
             $("#searchOverlay").fadeIn(200);
@@ -45,6 +32,7 @@
         });
 
         // ===== Window scroll events =====
+        let countersStarted = false;
         $(window).on('scroll', function () {
             // Overlay boxes counter
             if ($('.overlay--boxes').length > 0) {
@@ -52,7 +40,8 @@
                 let windowHeight = $(window).height();
                 let scrollPosition = $(window).scrollTop();
 
-                if (scrollPosition > (overlayBoxes - windowHeight)) {
+                if (!countersStarted && scrollPosition > (overlayBoxes - windowHeight)) {
+                    countersStarted = true;
                     let headings = $("[data-number]");
 
                     function increaseNumbers() {

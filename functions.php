@@ -132,7 +132,7 @@ function balkan_nature_adventure_scripts() {
 		'swiper',
 		$theme_dir_uri . '/js/swiper.min.js',
 		array(),
-		file_exists( $theme_dir . '/js/swiper.min.js' ) ? filemtime( $theme_dir . '/js/swiper.min.js' ) : '10.0.1',
+		file_exists( $theme_dir . '/js/swiper.min.js' ) ? filemtime( $theme_dir . '/js/swiper.min.js' ) : '12.2.0',
 		true
 	);
 
@@ -147,7 +147,7 @@ function balkan_nature_adventure_scripts() {
      wp_enqueue_script(
          'bundle-js',
          $theme_dir_uri . '/js/bundle.js',
-         array(),
+         array( 'jquery', 'swiper' ),
          filemtime($theme_dir . '/js/bundle.js'),
          true
      );
