@@ -3,7 +3,7 @@
     <div class="swiper campSlider mySwiper">
         <div class="swiper-wrapper">
 			<?php while(have_rows('slider')): the_row(); $numberOfSlides++; ?>
-    		<a href="<?php echo wp_get_attachment_image_url(get_sub_field('slider_image'), 'full'); ?>" data-fancybox="gallery" class="swiper-slide">
+		<a href="<?php echo esc_url( wp_get_attachment_image_url( get_sub_field( 'slider_image' ), 'full' ) ); ?>" data-fancybox="gallery" class="swiper-slide">
                <?php echo wp_get_attachment_image(get_sub_field('slider_image'), 'full'); ?> 
 				<div class="camping--slider-checks">
           			<div class="checks--info">

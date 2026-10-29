@@ -8,7 +8,7 @@
                 $size = 'full'; 
                 if( $images ): ?>
                  <?php foreach( $images as $image_id ): ?>
-                    <a href="<?php echo wp_get_attachment_image_url($image_id, 'full',  false, array('alt' => '')); ?>" class="swiper-slide" data-fancybox="group">
+                    <a href="<?php echo esc_url( wp_get_attachment_image_url( $image_id, 'full' ) ); ?>" class="swiper-slide" data-fancybox="group">
                         <?php echo wp_get_attachment_image( $image_id, $size,  false, array('alt' => '')); ?>
                     </a>
                 <?php endforeach; ?>
