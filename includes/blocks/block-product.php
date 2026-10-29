@@ -67,6 +67,7 @@
             		'orderby' 			=> 'date', 
             		'order' 			=> 'DESC',   
 					'posts_per_page'    => 3,
+                'no_found_rows' => true,
         		);
 
         		$destinations_query = new WP_Query($args);

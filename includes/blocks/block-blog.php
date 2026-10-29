@@ -13,6 +13,7 @@
                 'post_type' => 'post', 
                 'post_status' => 'publish',
 	        	'posts_per_page'    => 3,
+                'no_found_rows' => true,
                 'orderby' => 'date', 
                 'order' => 'DESC',   
             );      

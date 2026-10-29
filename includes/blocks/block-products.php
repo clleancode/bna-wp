@@ -18,19 +18,31 @@
         <div class="adventure--boxes">
 
         <?php
-            $selected_post_ids = get_field('select_destinations');
-
-            $args = array(
-                'post_type'      => array('post', 'page', 'destination'),
-                'post_status'    => 'publish',
-                'posts_per_page' => -1,
-                'post__in'       => $selected_post_ids,
-                'orderby'        => 'post__in'
+            $selected_post_ids = array_values(
+                array_unique(
+                    array_filter(
+                        array_map( 'absint', (array) get_field( 'select_destinations' ) )
+                    )
+                )
             );
 
-            $destinations_query = new WP_Query($args);
+            $destinations_query = null;
 
-            if ($destinations_query->have_posts()) :
+            // An empty post__in value would otherwise remove the ID filter and fetch every matching post.
+            if ( ! empty( $selected_post_ids ) ) {
+                $args = array(
+                    'post_type'      => array('post', 'page', 'destination'),
+                    'post_status'    => 'publish',
+                    'posts_per_page' => count( $selected_post_ids ),
+                    'post__in'       => $selected_post_ids,
+                    'orderby'        => 'post__in',
+                    'no_found_rows'  => true,
+                );
+
+                $destinations_query = new WP_Query($args);
+            }
+
+            if ($destinations_query && $destinations_query->have_posts()) :
 
                 while ($destinations_query->have_posts()) :
                     $destinations_query->the_post();
