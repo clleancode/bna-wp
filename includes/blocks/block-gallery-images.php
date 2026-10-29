@@ -10,6 +10,7 @@
             $args = array(
                 'post_type' => 'galleries',
                 'posts_per_page' => 4,
+                'no_found_rows' => true,
             );
 
             $galleries = new WP_Query( $args );
