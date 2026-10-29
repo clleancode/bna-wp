@@ -922,7 +922,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 	}, 100);
 
 	add_filter('the_content', function($content) {
-    if (is_admin()) return $content;
+    if (is_admin() || ! is_string( $content ) || stripos( $content, '<img' ) === false) return $content;
     
     $count = 0;
     return preg_replace_callback('/<img\s[^>]*>/i', function ($matches) use (&$count) {
@@ -940,7 +940,7 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 });
 
 	add_filter('the_content', function($content) {
-	    if (is_admin()) return $content;
+	    if (is_admin() || ! is_string( $content ) || stripos( $content, '<script' ) === false) return $content;
 	    return preg_replace_callback(
 	        '/<script\b([^>]*)\bsrc=["\']([^"\']+)["\']([^>]*)>(.*?)<\/script>/is',
 	        function($matches) {
@@ -1784,10 +1784,20 @@ add_filter( 'pll_rel_hreflang_attributes', function( $hreflangs ) {
 add_action('template_redirect', function () {
     if (is_admin()) return;
     ob_start(function ($html) {
+        if ( ! is_string( $html ) || $html === '' ) {
+            return $html;
+        }
+
         // Hiq editorskit CSS
-        $html = preg_replace('/<link[^>]+editorskit-frontend-css[^>]+>/i', '', $html);
+        if ( strpos( $html, 'editorskit-frontend-css' ) !== false ) {
+            $html = preg_replace('/<link[^>]+editorskit-frontend-css[^>]+>/i', '', $html);
+        }
 
         // Fix image alts
+        if ( stripos( $html, '<img' ) === false ) {
+            return $html;
+        }
+
         $html = preg_replace_callback('/<img[^>]+>/i', function ($img) {
             $tag = $img[0];
             if (preg_match('/alt=["\']([^"\']*)["\']/', $tag, $m) && trim($m[1]) !== '') {
