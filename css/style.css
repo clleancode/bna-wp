@@ -177,3 +177,11 @@
         outline: 3px solid #005fc1;
         outline-offset: 2px;
     }
+
+    .bna-form-honeypot {
+        position: absolute;
+        left: -10000px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+    }
