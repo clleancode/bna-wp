@@ -147,7 +147,7 @@ function balkan_nature_adventure_scripts() {
      wp_enqueue_script(
          'bundle-js',
          $theme_dir_uri . '/js/bundle.js',
-         array(),
+         array( 'jquery' ),
          filemtime($theme_dir . '/js/bundle.js'),
          true
      );
