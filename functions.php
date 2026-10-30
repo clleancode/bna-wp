@@ -1098,6 +1098,36 @@ function bna_normalize_hreflang_permalink( $url ) {
 	return trailingslashit( $url );
 }
 
+/**
+ * Give Polylang flag images useful alternative text for image-only switchers.
+ *
+ * @param string $flag Flag image markup.
+ * @param string $language_slug Polylang language slug.
+ * @return string
+ */
+function bna_accessible_polylang_flag( $flag, $language_slug ) {
+	if ( is_admin() || ! is_string( $flag ) || $flag === '' ) {
+		return $flag;
+	}
+
+	$labels = array(
+		'en' => 'English',
+		'fr' => 'Français',
+		'de' => 'Deutsch',
+		'nl' => 'Nederlands',
+	);
+	$slug  = strtolower( (string) $language_slug );
+	$label = isset( $labels[ $slug ] ) ? $labels[ $slug ] : $slug;
+	$alt   = esc_attr( $label );
+
+	if ( preg_match( '/\balt\s*=\s*(["\']).*?\1/i', $flag ) ) {
+		return preg_replace( '/\balt\s*=\s*(["\']).*?\1/i', 'alt="' . $alt . '"', $flag, 1 );
+	}
+
+	return preg_replace( '/<img\b/i', '<img alt="' . $alt . '"', $flag, 1 );
+}
+add_filter( 'pll_get_flag', 'bna_accessible_polylang_flag', 10, 2 );
+
 function bna_get_universal_home_url() {
 	return trailingslashit( set_url_scheme( get_option( 'home' ) ) );
 }
@@ -1820,25 +1850,6 @@ add_action('template_redirect', function () {
             }
             return $tag;
         }, $html);
-
-        $html = preg_replace_callback(
-            '/<(?:li|a)\b[^>]*\bclass=["\'][^"\']*\blang-item\b[^"\']*["\'][^>]*>.*?<\/(?:li|a)\s*>/is',
-            static function ( $language_item ) {
-                return preg_replace_callback(
-                    '/<img\b[^>]*>/i',
-                    static function ( $image ) {
-                        $tag = $image[0];
-                        if ( preg_match( '/\balt\s*=\s*(["\']).*?\1/i', $tag ) ) {
-                            return preg_replace( '/\balt\s*=\s*(["\']).*?\1/i', 'alt=""', $tag, 1 );
-                        }
-
-                        return str_replace( '<img', '<img alt=""', $tag );
-                    },
-                    $language_item[0]
-                );
-            },
-            $html
-        );
 
         return $html;
     });
