@@ -111,6 +111,99 @@ function setContactFormPageUrl(form) {
 
 document.addEventListener('DOMContentLoaded', function () {
     setContactFormPageUrl(document);
+
+    var checkfrontFallbacks = new WeakMap();
+    var checkfrontFallbackShown = false;
+
+    function labelCheckfrontWidgets(root) {
+        var widgets = [];
+
+        if (root.matches && root.matches('[id^="CHECKFRONT_WIDGET_"]')) {
+            widgets.push(root);
+        }
+        if (root.querySelectorAll) {
+            widgets = widgets.concat(Array.prototype.slice.call(root.querySelectorAll('[id^="CHECKFRONT_WIDGET_"]')));
+        }
+
+        widgets.forEach(function (widget) {
+            var allWidgets = document.querySelectorAll('[id^="CHECKFRONT_WIDGET_"]');
+            var optionNumber = Array.prototype.indexOf.call(allWidgets, widget) + 1;
+            var pageHeading = document.querySelector('main h1, h1');
+            var context = pageHeading ? pageHeading.textContent.trim() : document.title.trim();
+            var optionLabel = allWidgets.length > 1 ? ' - booking option ' + optionNumber : '';
+            var loader = widget.querySelector('#CHECKFRONT_LOADER');
+
+            if (loader) {
+                loader.setAttribute('role', 'status');
+                loader.setAttribute('aria-live', 'polite');
+                loader.setAttribute('aria-atomic', 'true');
+
+                if (!checkfrontFallbacks.has(widget) && widget.parentNode) {
+                    var fallback = document.createElement('span');
+                    fallback.className = 'bna-checkfront-fallback';
+                    fallback.setAttribute('role', 'alert');
+                    fallback.hidden = true;
+                    var bookingFallbackMessage = window.bnaThemeData && window.bnaThemeData.bookingFallbackMessage
+                        ? window.bnaThemeData.bookingFallbackMessage
+                        : 'Booking is taking longer than expected.';
+                    var bookingContactMessage = window.bnaThemeData && window.bnaThemeData.bookingContactMessage
+                        ? window.bnaThemeData.bookingContactMessage
+                        : 'Contact us for help.';
+                    fallback.appendChild(document.createTextNode(bookingFallbackMessage + ' '));
+
+                    var contactLink = document.createElement('a');
+                    contactLink.href = window.bnaThemeData && window.bnaThemeData.contactUrl
+                        ? window.bnaThemeData.contactUrl
+                        : window.location.origin + '/contact/';
+                    contactLink.textContent = bookingContactMessage;
+                    fallback.appendChild(contactLink);
+                    widget.parentNode.insertBefore(fallback, widget.nextSibling);
+                    checkfrontFallbacks.set(widget, fallback);
+                    var initialLoaderText = loader.textContent.trim();
+
+                    window.setTimeout(function () {
+                        if (
+                            !checkfrontFallbackShown &&
+                            widget.contains(loader) &&
+                            loader.textContent.trim() === initialLoaderText
+                        ) {
+                            checkfrontFallbackShown = true;
+                            fallback.hidden = false;
+                        }
+                    }, 30000);
+                }
+            }
+
+            widget.querySelectorAll('iframe').forEach(function (frame, frameIndex) {
+                if (!frame.hasAttribute('title') || !frame.getAttribute('title').trim()) {
+                    var frameLabel = frameIndex ? ' - frame ' + (frameIndex + 1) : '';
+                    frame.setAttribute(
+                        'title',
+                        'Checkfront booking availability for ' + (context || 'this page') + optionLabel + frameLabel
+                    );
+                }
+            });
+        });
+    }
+
+    labelCheckfrontWidgets(document);
+
+    if (document.body && window.MutationObserver) {
+        var checkfrontObserver = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                mutation.addedNodes.forEach(function (node) {
+                    if (node.nodeType === 1) {
+                        labelCheckfrontWidgets(node);
+                        var parentWidget = node.closest('[id^="CHECKFRONT_WIDGET_"]');
+                        if (parentWidget) {
+                            labelCheckfrontWidgets(parentWidget);
+                        }
+                    }
+                });
+            });
+        });
+        checkfrontObserver.observe(document.body, { childList: true, subtree: true });
+    }
 });
 
 document.addEventListener('submit', function (event) {

@@ -45,7 +45,11 @@
                 <?php
                     $embed_code = get_field('contact_map', false, false);
                 ?>
-                <iframe src="<?php echo esc_url($embed_code); ?>"></iframe>
+                <iframe
+                    src="<?php echo esc_url($embed_code); ?>"
+                    title="<?php esc_attr_e( 'Contact location map', 'balkan-nature-adventure' ); ?>"
+                    loading="lazy"
+                ></iframe>
             </div>
         </div>
     </div>

@@ -143,6 +143,15 @@ function balkan_nature_adventure_scripts() {
 		file_exists( $theme_dir . '/js/script.js' ) ? filemtime( $theme_dir . '/js/script.js' ) : '1.0',
 		true
 	);
+	wp_localize_script(
+		'main-js',
+		'bnaThemeData',
+		array(
+			'contactUrl'             => home_url( '/contact/' ),
+			'bookingFallbackMessage' => __( 'Booking is taking longer than expected.', 'balkan-nature-adventure' ),
+			'bookingContactMessage'  => __( 'Contact us for help.', 'balkan-nature-adventure' ),
+		)
+	);
 
      wp_enqueue_script(
          'bundle-js',
