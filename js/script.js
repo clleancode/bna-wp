@@ -111,6 +111,45 @@ function setContactFormPageUrl(form) {
 
 document.addEventListener('DOMContentLoaded', function () {
     setContactFormPageUrl(document);
+
+    document.addEventListener('click', function (e) {
+        var header = e.target.closest('.accordion--card-header');
+        if (!header) return;
+
+        function syncPanelAfterAnimation(panelHeader) {
+            var id = panelHeader.getAttribute('aria-controls');
+            var controlledPanel = id ? document.getElementById(id) : null;
+            if (!controlledPanel) return;
+
+            var $panel = window.jQuery ? window.jQuery(controlledPanel) : null;
+            if (!$panel) return;
+
+            $panel.promise('fx').done(function () {
+                var isOpen = panelHeader.classList.contains('active');
+                panelHeader.setAttribute('aria-expanded', String(isOpen));
+                if (isOpen) {
+                    controlledPanel.removeAttribute('hidden');
+                } else {
+                    controlledPanel.setAttribute('hidden', '');
+                }
+            });
+        }
+
+        requestAnimationFrame(function () {
+            document.querySelectorAll('.accordion--card-header').forEach(function (panelHeader) {
+                var isOpen = panelHeader.classList.contains('active');
+                panelHeader.setAttribute('aria-expanded', String(isOpen));
+
+                var id = panelHeader.getAttribute('aria-controls');
+                var controlledPanel = id ? document.getElementById(id) : null;
+                if (controlledPanel && isOpen) {
+                    controlledPanel.removeAttribute('hidden');
+                }
+
+                syncPanelAfterAnimation(panelHeader);
+            });
+        });
+    });
 });
 
 document.addEventListener('submit', function (event) {
