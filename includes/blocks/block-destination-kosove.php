@@ -56,7 +56,7 @@
         ?>
     </div>
 
-    <nav class="pagination">             
+    <nav class="pagination" aria-label="<?php esc_attr_e( 'Pagination', 'balkan-nature-adventure' ); ?>">
         <?php
             echo paginate_links( array(
                 'format'     => 'page/%#%',

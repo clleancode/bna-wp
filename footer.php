@@ -1,3 +1,6 @@
+<?php // The main landmark starts after the site header and ends before the footer. ?>
+</main>
+<footer class="site-footer">
 <div class="certificates">
             <div class="container">
                 <?php if( have_rows('certificates', 'option') ): ?>
@@ -150,6 +153,7 @@
     </script>
 
 
+    </footer>
     <?php wp_footer(); ?>
 
     <!-- <script type="text/javascript">

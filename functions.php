@@ -1349,6 +1349,7 @@ function bna_add_sr_only_h2() {
 }
 add_action( 'wp_body_open', 'bna_add_sr_only_h2' );
 
+
 // add_action('template_redirect', function () {
 //     ob_start(function ($html) {
 //         return preg_replace_callback('/<img[^>]+>/i', function ($img) {
@@ -1829,10 +1830,11 @@ add_action('template_redirect', function () {
 
 
 add_action( 'wp_head', function () {
-    echo '<style>
-    @font-face { font-family: "Prompt"; font-display: swap; }
-    </style>';
+	echo '<style>
+	@font-face { font-family: "Prompt"; font-display: swap; }
+	</style>';
 }, 1 );
+
 
 
 function BNA_configure_smtp( $phpmailer ) {
