@@ -116,33 +116,37 @@ document.addEventListener('DOMContentLoaded', function () {
         var header = e.target.closest('.accordion--card-header');
         if (!header) return;
 
-        var panelId = header.getAttribute('aria-controls');
-        var panel   = panelId ? document.getElementById(panelId) : null;
+        function syncPanelAfterAnimation(panelHeader) {
+            var id = panelHeader.getAttribute('aria-controls');
+            var controlledPanel = id ? document.getElementById(id) : null;
+            if (!controlledPanel) return;
+
+            var $panel = window.jQuery ? window.jQuery(controlledPanel) : null;
+            if (!$panel) return;
+
+            $panel.promise('fx').done(function () {
+                var isOpen = panelHeader.classList.contains('active');
+                panelHeader.setAttribute('aria-expanded', String(isOpen));
+                if (isOpen) {
+                    controlledPanel.removeAttribute('hidden');
+                } else {
+                    controlledPanel.setAttribute('hidden', '');
+                }
+            });
+        }
 
         requestAnimationFrame(function () {
-            var isNowOpen = header.classList.contains('active');
-            header.setAttribute('aria-expanded', String(isNowOpen));
+            document.querySelectorAll('.accordion--card-header').forEach(function (panelHeader) {
+                var isOpen = panelHeader.classList.contains('active');
+                panelHeader.setAttribute('aria-expanded', String(isOpen));
 
-            if (panel) {
-                if (isNowOpen) {
-                    panel.removeAttribute('hidden');
-                } else {
-                    setTimeout(function () {
-                        if (!header.classList.contains('active')) {
-                            panel.setAttribute('hidden', '');
-                        }
-                    }, 450);
+                var id = panelHeader.getAttribute('aria-controls');
+                var controlledPanel = id ? document.getElementById(id) : null;
+                if (controlledPanel && isOpen) {
+                    controlledPanel.removeAttribute('hidden');
                 }
-            }
 
-            document.querySelectorAll('.accordion--card-header').forEach(function (sib) {
-                if (sib === header || sib.classList.contains('active')) return;
-                sib.setAttribute('aria-expanded', 'false');
-                var sibPanelId = sib.getAttribute('aria-controls');
-                var sibPanel   = sibPanelId ? document.getElementById(sibPanelId) : null;
-                if (sibPanel) {
-                    setTimeout(function () { sibPanel.setAttribute('hidden', ''); }, 450);
-                }
+                syncPanelAfterAnimation(panelHeader);
             });
         });
     });

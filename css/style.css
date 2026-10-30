@@ -176,4 +176,4 @@
     .chat-content .wpcf7-form input[type="submit"]:focus-visible {
         outline: 3px solid #005fc1;
         outline-offset: 2px;
-    }
+    }.accordion--card-title{margin:0;padding:0}.accordion--card-header{display:block;width:100%;background:transparent;text-align:left;font:inherit}.accordion--card-header .paragraph{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:calc(100% - 78px);text-align:left;font-family:var(--font-family-base-second);font-size:1.2rem;color:var(--black)}.accordion--card-header .paragraph.text-Class{white-space:normal}
