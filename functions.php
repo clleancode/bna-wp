@@ -706,11 +706,58 @@ add_action( 'wp_enqueue_scripts', 'balkan_nature_adventure_scripts' );
 	 * Language Strings
 	 */
 
-	 add_action( 'init', function() {
-		if ( function_exists( 'pll_register_string' ) ) {
-			pll_register_string( 'Booking button label', 'Book Now', 'Theme' );
-		}
-	} );
+function bna_register_theme_translation_strings() {
+	if ( ! function_exists( 'pll_register_string' ) ) {
+		return;
+	}
+
+	$strings = array(
+		'Client reviews heading'       => 'Client reviews',
+		'Home breadcrumb'              => 'Home',
+		'Read more link'               => 'Read More',
+		'Category heading'             => 'Category',
+		'Recent news heading'          => 'Recent News',
+		'Empty product list'           => 'No products found in this category.',
+		'Newsletter form label'        => 'Newsletter signup',
+		'Email address'                => 'Email Address',
+		'Subscribe button'             => 'Subscribe',
+		'Header logo label'            => 'Logo',
+		'Footer logo label'            => 'Footer Logo Link',
+		'Facebook link label'          => 'Facebook Link',
+		'Twitter link label'           => 'Twitter Link',
+		'Instagram link label'         => 'Instagram Link',
+		'LinkedIn link label'          => 'Linkedin Link',
+		'Search label'                 => 'Search',
+		'Search placeholder'           => 'Search...',
+		'Submit search button'         => 'Submit search',
+		'Search results heading'       => 'Search Results for: %s',
+		'Chat button label'            => 'Chat now',
+		'Contact us label'             => 'Contact us',
+		'Close chat button'            => 'Close chat',
+		'Gallery title'                => 'Gallery',
+		'Gallery view heading'          => 'View',
+		'Gallery view link'            => 'View Gallery',
+		'More galleries link'          => 'More Galleries',
+		'Share heading'                => 'Share this via:',
+		'Watch video link'             => 'Watch Video',
+		'News and blog subtitle'       => 'News & Blog',
+		'Read news and blog heading'   => 'Read Every News & Blog',
+		'Articles and tips heading'    => 'Articles & Tips',
+		'404 heading'                  => '404 - Page Not Found',
+		'404 message'                  => "Sorry, but the page you're looking for does not exist or has been moved.",
+		'Contact form success message' => 'Thank you. Your message has been sent successfully.',
+		'Contact form failure message' => 'We could not send your message. Please try again or contact us by email.',
+		'Contact form invalid message' => 'Please check all required fields and try again.',
+		'Product category control'     => 'Select Category:',
+	);
+
+	foreach ( $strings as $name => $string ) {
+		pll_register_string( $name, $string, 'Theme' );
+	}
+
+	pll_register_string( 'Booking button label', 'Book Now', 'Theme' );
+}
+add_action( 'init', 'bna_register_theme_translation_strings' );
 
 	/**
 	 * Custom post type
