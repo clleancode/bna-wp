@@ -41,7 +41,7 @@
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 
-<div class="header ">
+<header class="header">
     <div class="wrapper">
         <div class="header--inner">
             <div class="logo">
@@ -55,7 +55,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     <span></span>
                     <span></span>
                 </div>
-                <div class="mobile-menu">
+                <nav class="mobile-menu" aria-label="<?php esc_attr_e( 'Mobile navigation', 'balkan-nature-adventure' ); ?>">
                     <div class="items">
                         <ul>
                             <?php
@@ -79,9 +79,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             </div>
                         </div> 
                     </div>
-                </div>
+                </nav>
             </div>
-            <div class="menu">
+            <nav class="menu" aria-label="<?php esc_attr_e( 'Main navigation', 'balkan-nature-adventure' ); ?>">
                     <?php
                         wp_nav_menu( 
                             array( 
@@ -89,7 +89,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                             ) 
                         ); 
                     ?>
-            </div>
+            </nav>
             <div id="searchOverlay" class="overlay">
 				<?php echo wp_get_attachment_image(get_field('search--background_image', 'option'), 'full'); ?> 
 				<div class="close-btn">
@@ -117,7 +117,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         </div>
     </div>
 	
-</div>
+</header>
 
 
 <script>
@@ -154,3 +154,5 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 })();
 </script>
+
+<main id="main-content" tabindex="-1">
