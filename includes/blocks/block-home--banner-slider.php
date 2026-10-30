@@ -29,6 +29,7 @@ $is_first = true;
                                 'loading' => $is_first ? 'eager' : 'lazy',
                                 'fetchpriority' => $is_first ? 'high' : 'low',
                                 'decoding' => 'async',
+                                'sizes' => '100vw',
                             )
                         );
 
@@ -85,6 +86,7 @@ $is_first = true;
                     'loading' => 'eager',
                     'fetchpriority' => 'high',
                     'decoding' => 'sync',
+                    'sizes' => '100vw',
                 )
             );
             ?>

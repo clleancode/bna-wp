@@ -44,7 +44,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="header--inner">
             <div class="logo">
                 <a class="logo-link" href="<?php echo esc_url( home_url('/') ); ?>" aria-label="Logo">
-                    <?php echo wp_get_attachment_image(get_field('logo_header_image', 'option'), 'full'); ?> 
+                    <?php
+                        $header_logo = get_field( 'logo_header_image', 'option' );
+                        echo wp_get_attachment_image(
+                            $header_logo,
+                            'full',
+                            false,
+                            array( 'loading' => 'eager' )
+                        );
+                    ?>
                 </a>
             </div>
             <div class="menu-mobile">
@@ -89,7 +97,31 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                     ?>
             </div>
             <div id="searchOverlay" class="overlay">
-				<?php echo wp_get_attachment_image(get_field('search--background_image', 'option'), 'full'); ?> 
+				<?php
+					$search_background_image = get_field( 'search--background_image', 'option' );
+					if ( is_array( $search_background_image ) ) {
+						$search_background_id = isset( $search_background_image['ID'] ) ? (int) $search_background_image['ID'] : 0;
+					} elseif ( $search_background_image instanceof WP_Post ) {
+						$search_background_id = (int) $search_background_image->ID;
+					} else {
+						$search_background_id = (int) $search_background_image;
+					}
+					$remove_search_image_priority = static function ( $attr, $attachment ) use ( $search_background_id ) {
+						if ( $search_background_id && $attachment instanceof WP_Post && (int) $attachment->ID === $search_background_id ) {
+							unset( $attr['fetchpriority'] );
+							$attr['loading'] = 'lazy';
+						}
+
+						return $attr;
+					};
+					if ( $search_background_id ) {
+						add_filter( 'wp_get_attachment_image_attributes', $remove_search_image_priority, 10, 2 );
+					}
+					echo wp_get_attachment_image( $search_background_image, 'full', false, array( 'loading' => 'lazy' ) );
+					if ( $search_background_id ) {
+						remove_filter( 'wp_get_attachment_image_attributes', $remove_search_image_priority, 10 );
+					}
+				?>
 				<div class="close-btn">
 					<span></span>
 					<span></span>
