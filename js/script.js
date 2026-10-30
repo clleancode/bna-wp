@@ -12,14 +12,47 @@
         }
 
         // ===== Menu item add chevron =====
+        let submenuIndex = 0;
         $(".menu-item-has-children > a").each(function() {
-            $(this).after('<span class="icon-cheveron-down"></span>');
+            const $link = $(this);
+            const $submenu = $link.siblings(".sub-menu").first();
+
+            if (!$submenu.length) {
+                return;
+            }
+
+            const submenuId = `bna-submenu-${submenuIndex++}`;
+            const parentLabel = $.trim($link.text());
+            $submenu.attr("id", submenuId);
+
+            const $toggle = $("<button>", {
+                type: "button",
+                class: "submenu-toggle",
+                "aria-expanded": "false",
+                "aria-controls": submenuId,
+                "aria-label": "Toggle submenu for " + parentLabel
+            }).append(
+                $("<span>", {
+                    class: "icon-cheveron-down",
+                    "aria-hidden": "true"
+                })
+            );
+
+            $link.after($toggle);
         });
 
-        $('.menu-item-has-children > span').on('click', function(){
-            $(this).next().slideToggle("medium");
-            $(this).toggleClass('arrow-rotate'); 
-            $(this).css({transition: "all .3s ease-in-out"});
+        $(document).on("click", ".submenu-toggle", function(event) {
+            event.preventDefault();
+
+            const submenu = document.getElementById(this.getAttribute("aria-controls"));
+            if (!submenu) {
+                return;
+            }
+
+            const expanded = this.getAttribute("aria-expanded") === "true";
+            this.setAttribute("aria-expanded", expanded ? "false" : "true");
+            $(this).find(".icon-cheveron-down").toggleClass("arrow-rotate", !expanded);
+            $(submenu).stop(true, true)[expanded ? "slideUp" : "slideDown"]("medium");
         });
 
         // // ===== Home Slider (Swiper) =====
@@ -36,12 +69,34 @@
         // }
 
         // ===== Search Overlay =====
-        $(".search-box--inner").on("click", function(){	
-            $("#searchOverlay").fadeIn(200);
+        const $searchTrigger = $(".search-box--inner");
+        const $searchOverlay = $("#searchOverlay");
+        const $searchInput = $searchOverlay.find('input[type="search"]').first();
+
+        function closeSearch() {
+            if (!$searchOverlay.is(":visible")) {
+                return;
+            }
+
+            $searchTrigger.attr("aria-expanded", "false").trigger("focus");
+            $searchOverlay.stop(true, true).fadeOut(100, function() {
+                $(this).attr("aria-hidden", "true");
+            });
+        }
+
+        $searchTrigger.on("click", function() {
+            $searchOverlay.attr("aria-hidden", "false").stop(true, true).fadeIn(200, function() {
+                $searchInput.trigger("focus");
+            });
+            $searchTrigger.attr("aria-expanded", "true");
         });
 
-        $(".close-btn").on("click", function(){
-            $("#searchOverlay").fadeOut(100);
+        $(".close-btn").on("click", closeSearch);
+
+        $(document).on("keydown", function(event) {
+            if (event.key === "Escape") {
+                closeSearch();
+            }
         });
 
         // ===== Window scroll events =====
