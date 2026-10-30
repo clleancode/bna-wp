@@ -1834,6 +1834,41 @@ add_action( 'wp_head', function () {
     </style>';
 }, 1 );
 
+function bna_link_homepage_press_citations( $content ) {
+	if ( ! is_front_page() || ! in_the_loop() || ! is_main_query() ) {
+		return $content;
+	}
+
+	$citations = array(
+		'http://on.ft.com/2euMCVS' => 'Read the Financial Times article',
+		'https://www.theguardian.com/travel/2024/nov/04/backcountry-skiing-tour-the-balkans-albania-kosovo-montenegro' => 'Read the Guardian article about backcountry skiing in the Balkans',
+		'https://www.bbc.com/travel/article/20190515-the-kosovar-woman-who-conquered-everest' => 'Read the BBC Travel profile of Kosovar mountaineer Arineta Mula',
+		'https://www.sueddeutsche.de/projekte/artikel/reise/skitouren-kosovo-albanien-peaks-of-the-balkans-e407457/?reduced=true' => 'Read the Süddeutsche Zeitung article about ski touring in Kosovo',
+		'https://www.travelandleisure.com/peaks-of-the-balkans-hiking-route-europe-kosovo-montenegro-albania-8740168' => 'Read the Travel + Leisure article about the Peaks of the Balkans',
+	);
+
+	return preg_replace_callback(
+		'/<(?:(a|script|style)\b[^>]*>.*?<\/\1\s*>|[^>]+)>|[^<]+/is',
+		static function ( $matches ) use ( $citations ) {
+			$chunk = $matches[0];
+
+			// Leave tags and complete anchor/script/style elements untouched.
+			if ( isset( $chunk[0] ) && '<' === $chunk[0] ) {
+				return $chunk;
+			}
+
+			foreach ( $citations as $url => $label ) {
+				$link   = '<a href="' . esc_url( $url ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $label ) . '</a>';
+				$chunk = str_replace( $url, $link, $chunk );
+			}
+
+			return $chunk;
+		},
+		$content
+	);
+}
+add_filter( 'the_content', 'bna_link_homepage_press_citations', 20 );
+
 
 function BNA_configure_smtp( $phpmailer ) {
 	if ( ! defined( 'BNA_SMTP_HOST' ) || ! defined( 'BNA_SMTP_USERNAME' ) || ! defined( 'BNA_SMTP_PASSWORD' ) ) {
