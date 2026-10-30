@@ -24,7 +24,7 @@
                 ?>
                 <div class="about-blog">
                     <h4><?php the_title(); ?></h4>
-                    <h5>Read More <span class="icon-angle-double-down"></span></h5>
+                    <span class="read-more-label">Read More <span class="icon-angle-double-down" aria-hidden="true"></span></span>
                 </div>
             </a>
 		<?php                               
