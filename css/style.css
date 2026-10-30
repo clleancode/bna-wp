@@ -176,4 +176,4 @@
     .chat-content .wpcf7-form input[type="submit"]:focus-visible {
         outline: 3px solid #005fc1;
         outline-offset: 2px;
-    }
+    }.search-box--inner,.close-btn,.submenu-toggle{background:transparent;border:0;color:inherit;font:inherit;cursor:pointer}.search-box--inner,.submenu-toggle,.close-btn{padding:0}.submenu-toggle{line-height:1;vertical-align:middle}.search-box--inner:focus-visible,.close-btn:focus-visible,.submenu-toggle:focus-visible{outline:3px solid #005fc1;outline-offset:3px}

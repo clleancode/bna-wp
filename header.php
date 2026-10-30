@@ -88,12 +88,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                         ); 
                     ?>
             </div>
-            <div id="searchOverlay" class="overlay">
+            <div id="searchOverlay" class="overlay" aria-hidden="true">
 				<?php echo wp_get_attachment_image(get_field('search--background_image', 'option'), 'full'); ?> 
-				<div class="close-btn">
-					<span></span>
-					<span></span>
-				</div>
+				<button type="button" class="close-btn" aria-label="<?php esc_attr_e( 'Close search', 'balkan-nature-adventure' ); ?>">
+					<span aria-hidden="true"></span>
+					<span aria-hidden="true"></span>
+				</button>
 				
           
                 <div class="overlay-content">
@@ -108,9 +108,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 </div>
             </div>
             <div class="header--buttons">
-                <div class="search-box--inner">
-                    <span class="icon-search search"></span>
-                </div>
+                <button
+                    type="button"
+                    class="search-box--inner"
+                    aria-label="<?php esc_attr_e( 'Open search', 'balkan-nature-adventure' ); ?>"
+                    aria-controls="searchOverlay"
+                    aria-expanded="false"
+                >
+                    <span class="icon-search search" aria-hidden="true"></span>
+                </button>
             </div>
         </div>
     </div>
