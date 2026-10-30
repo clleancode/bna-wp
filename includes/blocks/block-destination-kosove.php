@@ -42,7 +42,7 @@
                     <?php the_excerpt(); ?>
                     <span></span>
                     <div class="box--icon">
-                        <h6>Read More</h6>
+                        <span class="read-more-label">Read More</span>
                         <span class="icon-arrow-right"></span>
                     </div>
                 </div>

@@ -177,3 +177,5 @@
         outline: 3px solid #005fc1;
         outline-offset: 2px;
     }
+.blog .blog--inner .blog-box .about-blog .read-more-label{position:relative;display:inline-block;font-family:var(--font-family-base-second);color:var(--black);text-transform:uppercase;margin:auto;font-size:.8rem;z-index:2;transition:.3s}
+.section--boxes .boxes .box .box--inner .box--icon .read-more-label{font-family:var(--font-family-base-second);font-size:1rem}.blog .blog--inner .blog-box .about-blog .read-more-label .icon-angle-double-down{display:inline-flex;transform:rotate(270deg);padding:0 5px 0 0;font-size:16px}
